@@ -18,7 +18,7 @@ from gs_quant.target.common import *
 import datetime
 from typing import Tuple, Union
 from enum import Enum
-from gs_quant.base import Base, EnumBase, camel_case_translate, get_enum_value
+from gs_quant.base import Base, EnumBase, InstrumentBase, camel_case_translate, get_enum_value
 
 
 class PortfolioType(EnumBase, Enum):    
@@ -30,6 +30,67 @@ class PortfolioType(EnumBase, Enum):
     
     def __repr__(self):
         return self.value
+
+
+class GRDBPortfolioParameters(Base):
+        
+    """Parameters required for a GRDB portfolio."""
+
+    @camel_case_translate
+    def __init__(
+        self,
+        oe_id: str,
+        name: str = None
+    ):        
+        super().__init__()
+        self.oe_id = oe_id
+        self.name = name
+
+    @property
+    def oe_id(self) -> str:
+        """Marquee unique identifier"""
+        return self.__oe_id
+
+    @oe_id.setter
+    def oe_id(self, value: str):
+        self._property_changed('oe_id')
+        self.__oe_id = value        
+
+
+class SecDbBookDetail(Base):
+        
+    """Details about SecDb Book"""
+
+    @camel_case_translate
+    def __init__(
+        self,
+        book_id: str = None,
+        book_type: str = None,
+        name: str = None
+    ):        
+        super().__init__()
+        self.book_id = book_id
+        self.book_type = book_type
+        self.name = name
+
+    @property
+    def book_id(self) -> str:
+        """Book Id"""
+        return self.__book_id
+
+    @book_id.setter
+    def book_id(self, value: str):
+        self._property_changed('book_id')
+        self.__book_id = value        
+
+    @property
+    def book_type(self) -> str:
+        return self.__book_type
+
+    @book_type.setter
+    def book_type(self, value: str):
+        self._property_changed('book_type')
+        self.__book_type = value        
 
 
 class Portfolio(Base):
@@ -54,7 +115,7 @@ class Portfolio(Base):
         underlying_portfolio_ids: Tuple[str, ...] = None,
         tags: Tuple[str, ...] = None,
         type_: Union[PortfolioType, str] = None,
-        parameters: LiquidityRequest = None
+        parameters: dict = None
     ):        
         super().__init__()
         self.created_by_id = created_by_id
@@ -98,6 +159,7 @@ class Portfolio(Base):
 
     @property
     def currency(self) -> Union[Currency, str]:
+        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
         return self.__currency
 
     @currency.setter
@@ -249,10 +311,10 @@ class Portfolio(Base):
         self.__type = get_enum_value(PortfolioType, value)        
 
     @property
-    def parameters(self) -> LiquidityRequest:
+    def parameters(self) -> dict:
         return self.__parameters
 
     @parameters.setter
-    def parameters(self, value: LiquidityRequest):
+    def parameters(self, value: dict):
         self._property_changed('parameters')
         self.__parameters = value        

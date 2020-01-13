@@ -18,7 +18,7 @@ from gs_quant.target.common import *
 import datetime
 from typing import Tuple, Union
 from enum import Enum
-from gs_quant.base import Base, EnumBase, camel_case_translate, get_enum_value
+from gs_quant.base import Base, EnumBase, InstrumentBase, camel_case_translate, get_enum_value
 
 
 class SortByTerm(EnumBase, Enum):    
@@ -65,66 +65,6 @@ class AdvCurveTick(Base):
     def value(self, value: float):
         self._property_changed('value')
         self.__value = value        
-
-
-class CoordinatesRequest(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        as_of: datetime.date,
-        instruments: Tuple[Priceable, ...],
-        name: str = None
-    ):        
-        super().__init__()
-        self.as_of = as_of
-        self.instruments = instruments
-        self.name = name
-
-    @property
-    def as_of(self) -> datetime.date:
-        return self.__as_of
-
-    @as_of.setter
-    def as_of(self, value: datetime.date):
-        self._property_changed('as_of')
-        self.__as_of = value        
-
-    @property
-    def instruments(self) -> Tuple[Priceable, ...]:
-        """Instrument or Id   To specify a Marquee asset use the asset Id. For listed
-           products use an XRef, e.g. { 'bid': 'NGZ19 Comdty' }, { 'isin':
-           'US912810SD19' }. To specify an instrument use one of the listed
-           types"""
-        return self.__instruments
-
-    @instruments.setter
-    def instruments(self, value: Tuple[Priceable, ...]):
-        self._property_changed('instruments')
-        self.__instruments = value        
-
-
-class CoordinatesResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        results: Tuple[MarketDataCoordinate, ...],
-        name: str = None
-    ):        
-        super().__init__()
-        self.results = results
-        self.name = name
-
-    @property
-    def results(self) -> Tuple[MarketDataCoordinate, ...]:
-        """Object representation of a market data coordinate"""
-        return self.__results
-
-    @results.setter
-    def results(self, value: Tuple[MarketDataCoordinate, ...]):
-        self._property_changed('results')
-        self.__results = value        
 
 
 class ExecutionCostForHorizon(Base):
@@ -587,6 +527,7 @@ class LiquidityConstituent(Base):
 
     @property
     def exchange(self) -> str:
+        """Name of marketplace where security, derivative or other instrument is traded"""
         return self.__exchange
 
     @exchange.setter
@@ -1743,8 +1684,6 @@ class LiquidityResponse(Base):
     @camel_case_translate
     def __init__(
         self,
-        assets_not_in_risk_model: Tuple[str, ...] = None,
-        assets_not_in_cost_predict_model: Tuple[str, ...] = None,
         as_of_date: datetime.date = None,
         risk_model: str = None,
         notional: float = None,
@@ -1771,12 +1710,13 @@ class LiquidityResponse(Base):
         exposure_buckets: Tuple[LiquidityFactor, ...] = None,
         factor_exposure_buckets: Tuple[LiquidityFactorCategory, ...] = None,
         timeseries_data: Tuple[LiquidityTimeSeriesItem, ...] = None,
+        assets_not_in_risk_model: Tuple[str, ...] = None,
+        assets_not_in_cost_predict_model: Tuple[str, ...] = None,
+        assets_without_compositions: Tuple[str, ...] = None,
         error_message: str = None,
         name: str = None
     ):        
         super().__init__()
-        self.assets_not_in_risk_model = assets_not_in_risk_model
-        self.assets_not_in_cost_predict_model = assets_not_in_cost_predict_model
         self.as_of_date = as_of_date
         self.risk_model = risk_model
         self.notional = notional
@@ -1803,28 +1743,11 @@ class LiquidityResponse(Base):
         self.exposure_buckets = exposure_buckets
         self.factor_exposure_buckets = factor_exposure_buckets
         self.timeseries_data = timeseries_data
+        self.assets_not_in_risk_model = assets_not_in_risk_model
+        self.assets_not_in_cost_predict_model = assets_not_in_cost_predict_model
+        self.assets_without_compositions = assets_without_compositions
         self.error_message = error_message
         self.name = name
-
-    @property
-    def assets_not_in_risk_model(self) -> Tuple[str, ...]:
-        """Assets in the the portfolio that are not covered in the risk model."""
-        return self.__assets_not_in_risk_model
-
-    @assets_not_in_risk_model.setter
-    def assets_not_in_risk_model(self, value: Tuple[str, ...]):
-        self._property_changed('assets_not_in_risk_model')
-        self.__assets_not_in_risk_model = value        
-
-    @property
-    def assets_not_in_cost_predict_model(self) -> Tuple[str, ...]:
-        """Assets in the the portfolio that are not covered in the cost prediction model."""
-        return self.__assets_not_in_cost_predict_model
-
-    @assets_not_in_cost_predict_model.setter
-    def assets_not_in_cost_predict_model(self, value: Tuple[str, ...]):
-        self._property_changed('assets_not_in_cost_predict_model')
-        self.__assets_not_in_cost_predict_model = value        
 
     @property
     def as_of_date(self) -> datetime.date:
@@ -2085,6 +2008,37 @@ class LiquidityResponse(Base):
     def timeseries_data(self, value: Tuple[LiquidityTimeSeriesItem, ...]):
         self._property_changed('timeseries_data')
         self.__timeseries_data = value        
+
+    @property
+    def assets_not_in_risk_model(self) -> Tuple[str, ...]:
+        """Assets in the the portfolio that are not covered in the risk model."""
+        return self.__assets_not_in_risk_model
+
+    @assets_not_in_risk_model.setter
+    def assets_not_in_risk_model(self, value: Tuple[str, ...]):
+        self._property_changed('assets_not_in_risk_model')
+        self.__assets_not_in_risk_model = value        
+
+    @property
+    def assets_not_in_cost_predict_model(self) -> Tuple[str, ...]:
+        """Assets in the the portfolio that are not covered in the cost prediction model."""
+        return self.__assets_not_in_cost_predict_model
+
+    @assets_not_in_cost_predict_model.setter
+    def assets_not_in_cost_predict_model(self, value: Tuple[str, ...]):
+        self._property_changed('assets_not_in_cost_predict_model')
+        self.__assets_not_in_cost_predict_model = value        
+
+    @property
+    def assets_without_compositions(self) -> Tuple[str, ...]:
+        """Assets in the portfolio that do not have composition info needed for certain
+           statistics."""
+        return self.__assets_without_compositions
+
+    @assets_without_compositions.setter
+    def assets_without_compositions(self, value: Tuple[str, ...]):
+        self._property_changed('assets_without_compositions')
+        self.__assets_without_compositions = value        
 
     @property
     def error_message(self) -> str:

@@ -15,11 +15,10 @@ under the License.
 """
 
 from gs_quant.target.common import *
-from gs_quant.target.instrument import *
 import datetime
 from typing import Tuple, Union
 from enum import Enum
-from gs_quant.base import Base, EnumBase, camel_case_translate, get_enum_value
+from gs_quant.base import Base, EnumBase, InstrumentBase, camel_case_translate, get_enum_value
 
 
 class BacktestRiskMeasureType(EnumBase, Enum):    
@@ -1955,13 +1954,11 @@ class ISelectBacktestParameters(Base):
     def __init__(
         self,
         max_leverage: float,
-        start_date: str,
         underliers: Tuple[HistoricalUnderlier, ...],
         name: str = None
     ):        
         super().__init__()
         self.max_leverage = max_leverage
-        self.start_date = start_date
         self.underliers = underliers
         self.name = name
 
@@ -1974,16 +1971,6 @@ class ISelectBacktestParameters(Base):
     def max_leverage(self, value: float):
         self._property_changed('max_leverage')
         self.__max_leverage = value        
-
-    @property
-    def start_date(self) -> str:
-        """Date from which we want to start backtesting"""
-        return self.__start_date
-
-    @start_date.setter
-    def start_date(self, value: str):
-        self._property_changed('start_date')
-        self.__start_date = value        
 
     @property
     def underliers(self) -> Tuple[HistoricalUnderlier, ...]:

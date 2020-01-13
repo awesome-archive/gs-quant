@@ -14,17 +14,19 @@ specific language governing permissions and limitations
 under the License.
 """
 import datetime as dt
+import pandas as pd
 from abc import ABCMeta
 import inflection
 from typing import Optional, Union
-
+from gs_quant.base import Base
+from gs_quant.api.fred.fred_query import FredQuery
 from gs_quant.target.common import FieldFilterMap
 from gs_quant.target.data import DataQuery, MDAPIDataQuery
 
 
 class DataApi(metaclass=ABCMeta):
     @classmethod
-    def query_data(cls, query: DataQuery, dataset_id: str = None) -> Union[list, tuple]:
+    def query_data(cls, query: Union[DataQuery, FredQuery], dataset_id: str = None) -> Union[list, tuple]:
         raise NotImplementedError('Must implement get_data')
 
     @classmethod
@@ -39,6 +41,10 @@ class DataApi(metaclass=ABCMeta):
     def time_field(cls, dataset_id: str) -> str:
         raise NotImplementedError('Must implement time_field')
 
+    @classmethod
+    def construct_dataframe_with_types(cls, dataset_id: str, data: Union[Base, list, tuple, pd.Series]) -> pd.DataFrame:
+        raise NotImplementedError('Must implement time_field')
+
     @staticmethod
     def build_query(
             start: Optional[Union[dt.date, dt.datetime]] = None,
@@ -51,10 +57,11 @@ class DataApi(metaclass=ABCMeta):
         start_is_time = isinstance(start, dt.datetime)
 
         if kwargs.get('market_data_coordinates'):
-            if not (start is None or start_is_time) and (end is None or end_is_time):
+            if not ((start is None or start_is_time) and (end is None or end_is_time)):
                 raise NotImplementedError('EOD coordinates data not implemented')
 
             query = MDAPIDataQuery(
+                market_data_coordinates=kwargs.get('market_data_coordinates'),
                 start_time=start,
                 end_time=end,
                 format="MessagePack"

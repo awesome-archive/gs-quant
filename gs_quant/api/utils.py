@@ -13,20 +13,19 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-from gs_quant.instrument import Instrument, EqOption, FXOption
-from gs_quant.risk import Price, RiskMeasure
 
-__mappings = {
-    Price: {
-        EqOption: None,  # ToDo - replace with the appropriate price valuation
-        FXOption: None  # ToDo - replace with the appropriate price valuation
-    }
-}
+import socket
+import requests
 
 
-def get_specific_risk_measure(risk_measure: RiskMeasure, instrument: Instrument) -> RiskMeasure:
-    mappings = __mappings.get(risk_measure)
-    if mappings:
-        return mappings.get(instrument.__class__, risk_measure)
-
-    return risk_measure
+def handle_proxy(url, params):
+    if socket.getfqdn().split('.')[-2:] == ['gs', 'com']:
+        try:
+            import gs_quant_internal
+            proxies = gs_quant_internal.__proxies__
+            response = requests.get(url, params=params, proxies=proxies)
+        except ModuleNotFoundError:
+            raise RuntimeError('You must install gs_quant_internal to be able to use this endpoint')
+    else:
+        response = requests.get(url, params=params)
+    return response

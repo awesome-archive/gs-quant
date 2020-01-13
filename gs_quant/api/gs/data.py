@@ -18,8 +18,15 @@ from enum import Enum
 from itertools import chain
 from typing import Iterable, List, Optional, Tuple, Union
 
-import pandas as pd
+import logging
+from urllib.parse import urlencode
 
+import cachetools
+import numpy
+import pandas as pd
+from cachetools import TTLCache
+
+from gs_quant.base import Base
 from gs_quant.api.data import DataApi
 from gs_quant.data.core import DataContext
 from gs_quant.errors import MqValueError
@@ -29,6 +36,8 @@ from gs_quant.target.common import FieldFilterMap, XRef
 from gs_quant.target.data import DataQuery, DataQueryResponse, MDAPIDataBatchResponse, MDAPIDataQueryResponse
 from gs_quant.target.data import DataSetEntity
 from .assets import GsAssetApi, GsIdType
+
+_logger = logging.getLogger(__name__)
 
 
 class QueryType(Enum):
@@ -53,6 +62,8 @@ class QueryType(Enum):
     FORECAST = "Forecast"
     IMPLIED_VOLATILITY_BY_DELTA_STRIKE = "Implied Volatility By Delta Strike"
     FUNDAMENTAL_METRIC = "Fundamental Metric"
+    POLICY_RATE_EXPECTATION = "Policy Rate Expectation"
+    CENTRAL_BANK_SWAP_RATE = "Central Bank Swap Rate"
 
 
 class GsDataApi(DataApi):
@@ -202,6 +213,21 @@ class GsDataApi(DataApi):
 
         return definition
 
+    @classmethod
+    def get_many_definitions(cls,
+                             limit: int = 100,
+                             dataset_id: str = None,
+                             owner_id: str = None,
+                             name: str = None,
+                             mq_symbol: str = None) -> Tuple[DataSetEntity, ...]:
+
+        query_string = urlencode(dict(filter(lambda item: item[1] is not None,
+                                             dict(id=dataset_id, ownerId=owner_id, name=name,
+                                                  mqSymbol=mq_symbol, limit=limit).items())))
+
+        res = GsSession.current._get('/data/datasets?{query}'.format(query=query_string), cls=DataSetEntity)['results']
+        return res
+
     @staticmethod
     def build_market_data_query(asset_ids: List[str], query_type: QueryType, where: Union[FieldFilterMap] = None,
                                 source: Union[str] = None, real_time: bool = False):
@@ -314,7 +340,7 @@ class GsDataApi(DataApi):
     def coordinates_last(
             cls,
             coordinates: Union[Iterable[str], Iterable[MarketDataCoordinate]],
-            as_of: Union[dt.date, dt.datetime],
+            as_of: Optional[dt.datetime] = None,
             vendor: str = 'Goldman Sachs',
             as_dataframe: bool = False,
     ) -> Union[dict, pd.DataFrame]:
@@ -345,12 +371,12 @@ class GsDataApi(DataApi):
     def coordinates_data(
             cls,
             coordinates: Union[str, MarketDataCoordinate, Iterable[str], Iterable[MarketDataCoordinate]],
-            start: Optional[Union[dt.date, dt.datetime]] = None,
-            end: Optional[Union[dt.date, dt.datetime]] = None,
+            start: Optional[dt.datetime] = None,
+            end: Optional[dt.datetime] = None,
             vendor: str = 'Goldman Sachs',
             as_multiple_dataframes: bool = False
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame]]:
-        coordinates_iterable = (coordinates, ) if isinstance(coordinates, (MarketDataCoordinate, str)) else coordinates
+        coordinates_iterable = (coordinates,) if isinstance(coordinates, (MarketDataCoordinate, str)) else coordinates
         query = cls.build_query(
             market_data_coordinates=tuple(cls._coordinate_from_str(coord) if isinstance(coord, str) else coord
                                           for coord in coordinates_iterable),
@@ -370,8 +396,8 @@ class GsDataApi(DataApi):
     def coordinates_data_series(
             cls,
             coordinates: Union[str, MarketDataCoordinate, Iterable[str], Iterable[MarketDataCoordinate]],
-            start: Optional[Union[dt.date, dt.datetime]] = None,
-            end: Optional[Union[dt.date, dt.datetime]] = None,
+            start: Optional[dt.datetime] = None,
+            end: Optional[dt.datetime] = None,
             vendor: str = 'Goldman Sachs',
     ) -> Union[pd.Series, Tuple[pd.Series]]:
         dfs = cls.coordinates_data(
@@ -386,3 +412,43 @@ class GsDataApi(DataApi):
             return ret[0]
         else:
             return ret
+
+    @staticmethod
+    @cachetools.cached(TTLCache(ttl=3600, maxsize=128))
+    def get_types(dataset_id: str):
+        results = GsSession.current._get(f'/data/catalog/{dataset_id}')
+        fields = results.get("fields")
+        if fields:
+            field_types = {}
+            for key, value in fields.items():
+                field_type = value.get('type')
+                field_format = value.get('format')
+                field_types[key] = field_format or field_type
+            return field_types
+        raise RuntimeError(f"Unable to get Dataset schema for {dataset_id}")
+
+    @classmethod
+    def construct_dataframe_with_types(cls, dataset_id: str, data: Union[Base, list, tuple]) -> pd.DataFrame:
+        """
+        Constructs a dataframe with correct date types.
+        :param data: data to convert with correct types
+        :return: dataframe with correct types
+        """
+        if len(data):
+            dataset_types = cls.get_types(dataset_id)
+            df = pd.DataFrame(data)
+
+            for field_name, type_name in dataset_types.items():
+                if df.get(type_name) is not None and type_name in ('date', 'date-time'):
+                    df = df.astype({field_name: numpy.datetime64})
+
+            field_names = dataset_types.keys()
+
+            if 'date' in field_names:
+                df = df.set_index('date')
+            elif 'time' in field_names:
+                df = df.set_index('time')
+
+            return df
+        else:
+            return pd.DataFrame({})
