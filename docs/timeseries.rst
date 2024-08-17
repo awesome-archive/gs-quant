@@ -12,15 +12,25 @@ Algebra
 
    abs_
    add
+   and_
    ceil
    divide
-   exp 
+   exp
+   filter_
+   filter_dates
    floor
+   floordiv
+   if_
    log
    multiply
+   not_
+   or_
    power
+   repeat
+   smooth_spikes
    sqrt
    subtract
+   weighted_sum
 
 
 Analysis
@@ -34,12 +44,30 @@ Analysis
    diff
    first
    last
+   last_value
    count
    lag
 
 
+Backtesting
+-----------
+
+.. currentmodule:: gs_quant.timeseries.backtesting
+
+.. autosummary::
+   :toctree: functions
+
+   basket
+   basket_series
+
+.. autosummary::
+   :toctree: classes
+   :template: timeseries_class.rst
+
+   Basket
+
 Date / Time
-------------
+-----------
 
 
 .. currentmodule:: gs_quant.timeseries.datetime
@@ -55,6 +83,16 @@ Date / Time
    month
    year
    quarter
+   date_range
+   prepend
+   union
+   bucketize
+
+.. autosummary::
+   :toctree: classes
+   :template: timeseries_class.rst
+
+   Window
 
 
 Econometrics
@@ -70,10 +108,12 @@ Econometrics
    beta
    change
    correlation
+   excess_returns_
    index
    max_drawdown
    prices
    returns
+   sharpe_ratio
    volatility
 
 
@@ -86,12 +126,14 @@ Statistics
    :toctree: functions
 
    cov
+   exponential_std
    generate_series
    max_   
    mean
    median   
    min_
    mode
+   percentile
    percentiles
    product
    range_
@@ -101,6 +143,14 @@ Statistics
    winsorize
    zscores
 
+.. autosummary::
+   :toctree: classes
+   :template: timeseries_class.rst
+
+   LinearRegression
+   RollingLinearRegression
+   SIRModel
+   SEIRModel
 
 Technical Analysis
 ------------------
@@ -113,4 +163,10 @@ Technical Analysis
 
    bollinger_bands
    moving_average
+   exponential_moving_average
+   exponential_volatility
+   exponential_spread_volatility
+   smoothed_moving_average
+   relative_strength_index
+   macd
    

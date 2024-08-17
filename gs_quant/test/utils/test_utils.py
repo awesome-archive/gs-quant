@@ -13,11 +13,44 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-
 import json
 import pathlib
+from json.encoder import JSONEncoder
 
-from gs_quant.json_encoder import JSONEncoder
+import pytest
+
+from gs_quant.test.mock_data_test_utils import did_anything_fail, did_anything_run
+from gs_quant.test.utils.mock_request import MockRequest
+
+
+@pytest.mark.second_to_last
+@pytest.mark.fixmockdata
+def test_fix_mock_data():
+    # This will only be run if you use "--fixmockdata" option to pytest
+    if did_anything_fail():
+        pytest.skip("Skipping test as another test failed")
+    if not did_anything_run():
+        pytest.skip("Skipping test as nothing ran or not setup correctly")
+    MockRequest.reindex_test_files()
+    MockRequest.remove_unused_files()
+
+
+@pytest.mark.last
+def test_mock_data_file_sanity():
+    # Important that this test runs last, it asserts all the test files are used so we can cleanup unused ones
+    saved_files = MockRequest.get_saved_files()
+    assert [] == saved_files, 'Did you accidentally commit with save_files=True?!'
+
+    tests_passed = not did_anything_fail()
+
+    suffix = '(Other tests FAILED this is probably a red herring)' if not tests_passed else \
+        'Run pytest with --fixmockdata to fix this!'
+
+    bad_index = MockRequest.reindex_test_files(report_only=True, log=tests_passed)
+    assert bad_index == tuple(), f'Files with bad index. {suffix}'
+
+    unused_files = MockRequest.get_unused_files(log=tests_passed)
+    assert unused_files == tuple(), f'Cleanup your unused test files! {suffix}'
 
 
 def _remove_unwanted(json_text):

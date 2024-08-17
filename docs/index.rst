@@ -3,20 +3,21 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+GS Quant API
+============
+
 .. toctree::
    :maxdepth: 2
    :caption: Packages
 
+   analytics
    data
    datetime
-   instrument
-   market
+   instrument 
+   markets
+   models
    risk
    timeseries
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
+:ref:`genindex`
 

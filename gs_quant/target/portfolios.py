@@ -14,11 +14,34 @@ specific language governing permissions and limitations
 under the License.
 """
 
-from gs_quant.target.common import *
+from gs_quant.base import *
+from gs_quant.common import *
 import datetime
-from typing import Tuple, Union
+from typing import Dict, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from dataclasses_json import LetterCase, config, dataclass_json
 from enum import Enum
-from gs_quant.base import Base, EnumBase, camel_case_translate, get_enum_value
+
+
+class ActiveWeightType(EnumBase, Enum):    
+    
+    """Weight type used to calculate active holdings."""
+
+    Net = 'Net'
+    Gross = 'Gross'    
+
+
+class ClientPositionFilter(EnumBase, Enum):    
+    
+    """Filter used to select client positions from GRDB. 'oeId' selects all positions
+       associated with the provided oeId. 'oeIdOrClientAccounts' selects
+       positions associated with their the provided oeId or ClientAccounts.
+       'clientAccounts' selects positions only associated with those provided
+       accounts."""
+
+    oeId = 'oeId'
+    clientAccounts = 'clientAccounts'
+    oeIdOrClientAccounts = 'oeIdOrClientAccounts'    
 
 
 class PortfolioType(EnumBase, Enum):    
@@ -27,232 +50,154 @@ class PortfolioType(EnumBase, Enum):
 
     Securities_Lending = 'Securities Lending'
     Draft_Portfolio = 'Draft Portfolio'
+    Draft_Bond = 'Draft Bond'
+    PCO_Portfolio = 'PCO Portfolio'
+    PCO_Share_Class = 'PCO Share Class'    
+
+
+class RefreshInterval(EnumBase, Enum):    
     
-    def __repr__(self):
-        return self.value
+    """These intervals determine how often a portfolio is refreshed"""
+
+    Daily = 'Daily'
+    Start_Of_Week = 'Start Of Week'
+    End_Of_Week = 'End Of Week'
+    Start_Of_Month = 'Start Of Month'
+    End_Of_Month = 'End Of Month'    
 
 
+class RiskAumSource(EnumBase, Enum):    
+    
+    """Source of AUM for portfolio risk calculations."""
+
+    Gross = 'Gross'
+    Long = 'Long'
+    Short = 'Short'
+    Custom_AUM = 'Custom AUM'
+    Net = 'Net'    
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class SecDbBookDetail(Base):
+    book_id: Optional[str] = field(default=None, metadata=field_metadata)
+    book_type: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CreditPreTradePortfolioParameters(Base):
+    date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    reference_id: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class GRDBPortfolioParameters(Base):
+    oe_id: str = field(default=None, metadata=field_metadata)
+    client_name: str = field(default=None, metadata=field_metadata)
+    increment: str = field(default=None, metadata=field_metadata)
+    risk_packages: Tuple[str, ...] = field(default=None, metadata=field_metadata)
+    enabled: str = field(default=None, metadata=field_metadata)
+    is_live: str = field(default=None, metadata=field_metadata)
+    client_account_names: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    oasis_account_names: Optional[Tuple[str, ...]] = field(default=None, metadata=config(field_name='OasisAccountNames', exclude=exclude_none))
+    client_position_filter: Optional[ClientPositionFilter] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class PCOTrade(Base):
+    fill_rate: Optional[str] = field(default=None, metadata=field_metadata)
+    include_in_hedge: Optional[bool] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    spot_ref: Optional[str] = field(default=None, metadata=field_metadata)
+    notes: Optional[str] = field(default=None, metadata=field_metadata)
+    creation_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    base_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    quote_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    base_currency_notional: Optional[str] = field(default=None, metadata=field_metadata)
+    quote_currency_notional: Optional[str] = field(default=None, metadata=field_metadata)
+    trade_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    fixing_ref: Optional[str] = field(default=None, metadata=field_metadata)
+    side: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class TemporalPortfolioParameters(Base):
+    return_type: Optional[ReturnType] = field(default=None, metadata=field_metadata)
+    refresh_interval: Optional[RefreshInterval] = field(default=None, metadata=field_metadata)
+    active_weight_type: Optional[ActiveWeightType] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class PCOPortfolioParameters(Base):
+    base_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    local_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fund_calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    calculation_currency: Optional[PCOCurrencyType] = field(default=None, metadata=field_metadata)
+    hedge_settlement_interval: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    hedge_settlement_day: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    roll_horizon: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    pnl_currency: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    nav_publication_period: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    roll_date_zero_threshold: Optional[bool] = field(default=None, metadata=field_metadata)
+    unrealised_mark_to_market: Optional[PCOUnrealisedMarkToMarket] = field(default=None, metadata=field_metadata)
+    target_deviation: Optional[Tuple[PCOTargetDeviation, ...]] = field(default=None, metadata=field_metadata)
+    cash_balances: Optional[Tuple[PCOCashBalance, ...]] = field(default=None, metadata=field_metadata)
+    exposure: Optional[PCOExposure] = field(default=None, metadata=field_metadata)
+    pco_share_class: Optional[PCOShareClass] = field(default=None, metadata=field_metadata)
+    settlements: Optional[Tuple[PCOSettlements, ...]] = field(default=None, metadata=field_metadata)
+    show_cash: Optional[bool] = field(default=None, metadata=field_metadata)
+    show_exposure: Optional[bool] = field(default=None, metadata=field_metadata)
+    enable_rfq: Optional[bool] = field(default=None, metadata=config(field_name='enableRFQ', exclude=exclude_none))
+    fixing_descriptions: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    pco_origin: Optional[PCOOrigin] = field(default=None, metadata=field_metadata)
+    version: Optional[str] = field(default=None, metadata=field_metadata)
+    trades: Optional[Tuple[PCOTrade, ...]] = field(default=None, metadata=field_metadata)
+    investment_ratio: Optional[str] = field(default=None, metadata=field_metadata)
+    roll_currency: Optional[Tuple[PCOParameterValues, ...]] = field(default=None, metadata=field_metadata)
+    param_version: Optional[str] = field(default=None, metadata=field_metadata)
+    security_breakdown: Optional[PCOSecurityBreakdown] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class Portfolio(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        currency: Union[Currency, str],
-        name: str,
-        created_by_id: str = None,
-        created_time: datetime.datetime = None,
-        description: str = None,
-        entitlements: Entitlements = None,
-        entitlement_exclusions: EntitlementExclusions = None,
-        id_: str = None,
-        identifiers: Tuple[Identifier, ...] = None,
-        last_updated_by_id: str = None,
-        last_updated_time: datetime.datetime = None,
-        owner_id: str = None,
-        report_ids: Tuple[str, ...] = None,
-        short_name: str = None,
-        underlying_portfolio_ids: Tuple[str, ...] = None,
-        tags: Tuple[str, ...] = None,
-        type_: Union[PortfolioType, str] = None,
-        parameters: LiquidityRequest = None
-    ):        
-        super().__init__()
-        self.created_by_id = created_by_id
-        self.created_time = created_time
-        self.currency = currency
-        self.description = description
-        self.entitlements = entitlements
-        self.entitlement_exclusions = entitlement_exclusions
-        self.__id = id_
-        self.identifiers = identifiers
-        self.last_updated_by_id = last_updated_by_id
-        self.last_updated_time = last_updated_time
-        self.name = name
-        self.owner_id = owner_id
-        self.report_ids = report_ids
-        self.short_name = short_name
-        self.underlying_portfolio_ids = underlying_portfolio_ids
-        self.tags = tags
-        self.__type = get_enum_value(PortfolioType, type_)
-        self.parameters = parameters
-
-    @property
-    def created_by_id(self) -> str:
-        """Unique identifier of user who created the object"""
-        return self.__created_by_id
-
-    @created_by_id.setter
-    def created_by_id(self, value: str):
-        self._property_changed('created_by_id')
-        self.__created_by_id = value        
-
-    @property
-    def created_time(self) -> datetime.datetime:
-        """Time created. ISO 8601 formatted string"""
-        return self.__created_time
-
-    @created_time.setter
-    def created_time(self, value: datetime.datetime):
-        self._property_changed('created_time')
-        self.__created_time = value        
-
-    @property
-    def currency(self) -> Union[Currency, str]:
-        return self.__currency
-
-    @currency.setter
-    def currency(self, value: Union[Currency, str]):
-        self._property_changed('currency')
-        self.__currency = get_enum_value(Currency, value)        
-
-    @property
-    def description(self) -> str:
-        """Free text description of portfolio. Description provided will be indexed in the
-           search service for free text relevance match"""
-        return self.__description
-
-    @description.setter
-    def description(self, value: str):
-        self._property_changed('description')
-        self.__description = value        
-
-    @property
-    def entitlements(self) -> Entitlements:
-        """Defines the entitlements of a given resource"""
-        return self.__entitlements
-
-    @entitlements.setter
-    def entitlements(self, value: Entitlements):
-        self._property_changed('entitlements')
-        self.__entitlements = value        
-
-    @property
-    def entitlement_exclusions(self) -> EntitlementExclusions:
-        """Defines the exclusion entitlements of a given resource"""
-        return self.__entitlement_exclusions
-
-    @entitlement_exclusions.setter
-    def entitlement_exclusions(self, value: EntitlementExclusions):
-        self._property_changed('entitlement_exclusions')
-        self.__entitlement_exclusions = value        
-
-    @property
-    def id(self) -> str:
-        """Marquee unique portfolio identifier"""
-        return self.__id
-
-    @id.setter
-    def id(self, value: str):
-        self._property_changed('id')
-        self.__id = value        
-
-    @property
-    def identifiers(self) -> Tuple[Identifier, ...]:
-        """Array of identifier objects which can be used to locate this item in searches
-           and other services"""
-        return self.__identifiers
-
-    @identifiers.setter
-    def identifiers(self, value: Tuple[Identifier, ...]):
-        self._property_changed('identifiers')
-        self.__identifiers = value        
-
-    @property
-    def last_updated_by_id(self) -> str:
-        """Unique identifier of user who last updated the object"""
-        return self.__last_updated_by_id
-
-    @last_updated_by_id.setter
-    def last_updated_by_id(self, value: str):
-        self._property_changed('last_updated_by_id')
-        self.__last_updated_by_id = value        
-
-    @property
-    def last_updated_time(self) -> datetime.datetime:
-        """Timestamp of when the object was last updated"""
-        return self.__last_updated_time
-
-    @last_updated_time.setter
-    def last_updated_time(self, value: datetime.datetime):
-        self._property_changed('last_updated_time')
-        self.__last_updated_time = value        
-
-    @property
-    def name(self) -> str:
-        """Display name of the portfolio"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def owner_id(self) -> str:
-        """Marquee unique identifier for user who owns the object."""
-        return self.__owner_id
-
-    @owner_id.setter
-    def owner_id(self, value: str):
-        self._property_changed('owner_id')
-        self.__owner_id = value        
-
-    @property
-    def report_ids(self) -> Tuple[str, ...]:
-        """Array of report identifiers related to the object"""
-        return self.__report_ids
-
-    @report_ids.setter
-    def report_ids(self, value: Tuple[str, ...]):
-        self._property_changed('report_ids')
-        self.__report_ids = value        
-
-    @property
-    def short_name(self) -> str:
-        """Short name or alias for the portfolio"""
-        return self.__short_name
-
-    @short_name.setter
-    def short_name(self, value: str):
-        self._property_changed('short_name')
-        self.__short_name = value        
-
-    @property
-    def underlying_portfolio_ids(self) -> Tuple[str, ...]:
-        """Underlying portfolio Ids"""
-        return self.__underlying_portfolio_ids
-
-    @underlying_portfolio_ids.setter
-    def underlying_portfolio_ids(self, value: Tuple[str, ...]):
-        self._property_changed('underlying_portfolio_ids')
-        self.__underlying_portfolio_ids = value        
-
-    @property
-    def tags(self) -> Tuple[str, ...]:
-        """Metadata associated with the object. Provide an array of strings which will be
-           indexed for search and locating related objects"""
-        return self.__tags
-
-    @tags.setter
-    def tags(self, value: Tuple[str, ...]):
-        self._property_changed('tags')
-        self.__tags = value        
-
-    @property
-    def type(self) -> Union[PortfolioType, str]:
-        """Portfolio type differentiates the portfolio categorization"""
-        return self.__type
-
-    @type.setter
-    def type(self, value: Union[PortfolioType, str]):
-        self._property_changed('type')
-        self.__type = get_enum_value(PortfolioType, value)        
-
-    @property
-    def parameters(self) -> LiquidityRequest:
-        return self.__parameters
-
-    @parameters.setter
-    def parameters(self, value: LiquidityRequest):
-        self._property_changed('parameters')
-        self.__parameters = value        
+    currency: Currency = field(default=None, metadata=field_metadata)
+    name: str = field(default=None, metadata=field_metadata)
+    id_: Optional[str] = field(default=None, metadata=config(field_name='id', exclude=exclude_none))
+    created_by_id: Optional[str] = field(default=None, metadata=field_metadata)
+    created_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
+    description: Optional[str] = field(default=None, metadata=field_metadata)
+    entitlements: Optional[Entitlements] = field(default=None, metadata=field_metadata)
+    entitlement_exclusions: Optional[EntitlementExclusions] = field(default=None, metadata=field_metadata)
+    identifiers: Optional[Tuple[Identifier, ...]] = field(default=None, metadata=field_metadata)
+    last_updated_by_id: Optional[str] = field(default=None, metadata=field_metadata)
+    last_updated_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
+    owner_id: Optional[str] = field(default=None, metadata=field_metadata)
+    report_ids: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    scenario_ids: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    short_name: Optional[str] = field(default=None, metadata=field_metadata)
+    underlying_portfolio_ids: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    tags: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    type_: Optional[PortfolioType] = field(default=None, metadata=config(field_name='type', exclude=exclude_none))
+    parameters: Optional[DictBase] = field(default=None, metadata=field_metadata)
+    aum_source: Optional[RiskAumSource] = field(default=None, metadata=field_metadata)
+    tag_name_hierarchy: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)

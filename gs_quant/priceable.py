@@ -13,99 +13,35 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+import logging
+from abc import ABC
+from typing import Union, Optional
+
 from gs_quant.base import Priceable
-from gs_quant.markets import PricingCache, PricingContext
-from gs_quant.risk import DollarPrice, Price, RiskMeasure
-from gs_quant.session import GsSession
-
-from abc import ABCMeta
-from concurrent.futures import Future
-import pandas as pd
-from typing import Iterable, Optional, Tuple, Union
-
+from gs_quant.context_base import nullcontext
+from gs_quant.markets import MarketDataCoordinate, PricingContext, CloseMarket, OverlayMarket
+from gs_quant.risk import DataFrameWithInfo, DollarPrice, FloatWithInfo, Price, SeriesWithInfo, \
+    MarketData
+from gs_quant.risk.results import PricingFuture, PortfolioRiskResult, ErrorValue
 
 __asset_class_and_type_to_instrument = {}
+_logger = logging.getLogger(__name__)
 
 
-class RiskResult:
-
-    def __init__(self, result, risk_measures: Iterable[RiskMeasure]):
-        self.__risk_measures = tuple(risk_measures)
-        self.__result = result
+class PriceableImpl(Priceable, ABC):
 
     @property
-    def done(self) -> bool:
-        return self.__result.done()
+    def _pricing_context(self) -> PricingContext:
+        pricing_context = PricingContext.current
+        return pricing_context if not (pricing_context.is_entered or pricing_context.is_async) else nullcontext()
 
     @property
-    def risk_measures(self) -> Tuple[RiskMeasure]:
-        return self.__risk_measures
+    def _return_future(self) -> bool:
+        pricing_context = self._pricing_context
+        return not isinstance(pricing_context, PricingContext) or (pricing_context.is_async or
+                                                                   pricing_context.is_entered)
 
-    @property
-    def _result(self):
-        return self.__result
-
-
-class PriceableImpl(Priceable, metaclass=ABCMeta):
-
-    """A priceable, such as a derivative instrument"""
-
-    PROVIDER = None
-
-    def __init__(self):
-        super().__init__()
-        self._resolution_info: dict = None
-        self.unresolved: Priceable = None
-
-    def __getattribute__(self, name):
-        resolved = False
-
-        try:
-            resolved = super().__getattribute__('_resolution_info') is not None
-        except AttributeError:
-            pass
-
-        if GsSession.current_is_set and not resolved:
-            attr = getattr(super().__getattribute__('__class__'), name, None)
-            if attr and isinstance(attr, property) and super().__getattribute__(name) is None:
-                self.resolve()
-
-        return super().__getattribute__(name)
-
-    def _property_changed(self, prop: str):
-        if self._hash_is_calced:
-            PricingCache.drop(self)
-
-        super()._property_changed(prop)
-        self._resolution_info = None
-
-    def get_quantity(self) -> float:
-        """
-        Quantity of the instrument
-        """
-        return 1
-
-    def resolve(self, in_place: bool = True) -> Optional[Priceable]:
-        """
-        Resolve non-supplied properties of an instrument
-
-        **Examples**
-
-        >>> from gs_quant.instrument import IRSwap
-        >>>
-        >>> swap = IRSwap('Pay', '10y', 'USD')
-        >>> rate = swap.fixedRate
-
-        rate is None
-
-        >>> swap.resolve()
-        >>> rate = swap.fixedRate
-
-        rates is now the solved fixed rate
-        """
-        return PricingContext.current.resolve_fields(self, in_place)
-
-    def dollar_price(self) -> Union[float, Future, RiskResult]:
+    def dollar_price(self) -> Union[FloatWithInfo, PortfolioRiskResult, PricingFuture, SeriesWithInfo]:
         """
         Present value in USD
 
@@ -123,7 +59,7 @@ class PriceableImpl(Priceable, metaclass=ABCMeta):
         >>> cap_usd = IRCap('1y', 'USD')
         >>> cap_eur = IRCap('1y', 'EUR')
         >>>
-        >>> from gs_quant.risk import PricingContext
+        >>> from gs_quant.markets import PricingContext
         >>>
         >>> with PricingContext():
         >>>     price_usd_f = cap_usd.dollar_price()
@@ -136,7 +72,7 @@ class PriceableImpl(Priceable, metaclass=ABCMeta):
         """
         return self.calc(DollarPrice)
 
-    def price(self) -> Union[float, Future, RiskResult]:
+    def price(self, currency=None) -> Union[FloatWithInfo, PortfolioRiskResult, PricingFuture, SeriesWithInfo]:
         """
         Present value in local currency. Note that this is not yet supported on all instruments
 
@@ -149,47 +85,52 @@ class PriceableImpl(Priceable, metaclass=ABCMeta):
 
         price is the present value in EUR (a float)
         """
-        return self.calc(Price)
+        return self.calc(Price(currency=currency)) if currency else self.calc(Price)
 
-    def calc(self, risk_measure: Union[RiskMeasure, Iterable[RiskMeasure]])\
-            -> Union[dict, float, str, pd.DataFrame, Future, RiskResult]:
+    def market(self) -> Union[OverlayMarket, PricingFuture]:
         """
-        Calculate the value of the risk_measure
+        Market Data map of coordinates and values. Note that this is not yet supported on all instruments
 
-        :param risk_measure: the risk measure to compute, e.g. IRDelta (from gs_quant.risk)
-        :return: a float or dataframe, depending on whether the value is scalar or structured, or a future thereof
-        (depending on how PricingContext is being used)
+        ***Examples**
 
-        **Examples**
-
-        >>> from gs_quant.instrument import IRCap
-        >>> from gs_quant.risk import IRDelta
+        >>> from gs_quant.instrument import IRSwap
         >>>
-        >>> cap = IRCap('1y', 'USD')
-        >>> delta = cap.calc(IRDelta)
+        >>> swap = IRSwap('Pay', '10y', 'EUR')
+        >>> market = swap.market()
 
-        delta is a dataframe
-
-        >>> from gs_quant.instrument import EqOption
-        >>> from gs_quant.risk import EqDelta
-        >>>
-        >>> option = EqOption('.SPX', '3m', 'ATMF', 'Call', 'European')
-        >>> delta = option.calc(EqDelta)
-
-        delta is a float
-
-        >>> from gs_quant.risk import PricingContext
-        >>>
-        >>> cap_usd = IRCap('1y', 'USD')
-        >>> cap_eur = IRCap('1y', 'EUR')
-
-        >>> with PricingContext():
-        >>>     usd_delta_f = cap_usd.calc(IRDelta)
-        >>>     eur_delta_f = cap_eur.calc(IRDelta)
-        >>>
-        >>> usd_delta = usd_delta_f.result()
-        >>> eur_delta = eur_delta_f.result()
-
-        usd_delta_f and eur_delta_f are futures, usd_delta and eur_delta are dataframes
         """
-        return PricingContext.current.calc(self, risk_measure)
+
+        def handle_result(result: Optional[Union[DataFrameWithInfo, ErrorValue, PricingFuture]]) -> \
+                [OverlayMarket, dict]:
+            if isinstance(result, ErrorValue):
+                return result
+
+            properties = MarketDataCoordinate.properties()
+            is_historical = result.index.name == 'date'
+            location = PricingContext.current.market_data_location
+
+            def extract_market_data(this_result: DataFrameWithInfo):
+                market_data = {}
+
+                for _, row in this_result.iterrows():
+                    coordinate_values = {p: row.get(p) for p in properties}
+                    mkt_point = coordinate_values.get('mkt_point')
+                    if mkt_point is not None:
+                        coordinate_values['mkt_point'] = tuple(coordinate_values['mkt_point'].split(';'))
+
+                    # return 'redacted' as coordinate value if its a redacted coordinate
+                    market_data[MarketDataCoordinate.from_dict(coordinate_values)] = row['value'] if \
+                        row['permissions'] == 'Granted' else 'redacted'
+
+                return market_data
+
+            if is_historical:
+                return {date: OverlayMarket(
+                    base_market=CloseMarket(date=date, location=location),
+                    market_data=extract_market_data(result.loc[date]))
+                    for date in set(result.index)}
+            else:
+                return OverlayMarket(base_market=result.risk_key.market,
+                                     market_data=extract_market_data(result))
+
+        return self.calc(MarketData, fn=handle_result)

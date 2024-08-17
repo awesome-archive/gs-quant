@@ -13,35 +13,47 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-from abc import ABCMeta
-from typing import Mapping, Union
+from typing import Mapping, Optional
 
-from gs_quant.context_base import ContextBaseWithDefault, ContextMeta
-from gs_quant.markets.core import PricingContext
-from gs_quant.target.risk import CarryScenario, CurveScenario, MarketDataScenario, MarketDataPattern, MarketDataShock,\
-    MarketDataPatternAndShock, MarketDataShockBasedScenario as __MarketDataShockBasedScenario
+from pandas import DataFrame
 
-
-class __ScenarioMeta(ABCMeta, ContextMeta):
-    pass
+from gs_quant.target.risk import MarketDataPattern, MarketDataShock, \
+    MarketDataPatternAndShock, MarketDataShockBasedScenario as __MarketDataShockBasedScenario, \
+    MarketDataVolShockScenario as __MarketDataVolShockScenario, MarketDataVolSlice, MarketDataShockType
 
 
 class MarketDataShockBasedScenario(__MarketDataShockBasedScenario):
 
-    def __init__(self, shocks: Mapping[MarketDataPattern, MarketDataShock]):
-        super().__init__(tuple(MarketDataPatternAndShock(p, s) for p, s in shocks.items()))
+    def __init__(self, shocks: Mapping[MarketDataPattern, MarketDataShock], name: Optional[str] = None):
+        super().__init__(tuple(MarketDataPatternAndShock(p, s) for p, s in shocks.items()), name=name)
 
 
-class ScenarioContext(MarketDataScenario, ContextBaseWithDefault, metaclass=__ScenarioMeta):
+class MarketDataVolShockScenario(__MarketDataVolShockScenario):
 
-    """A context containing scenario parameters, such as shocks"""
+    @classmethod
+    def from_dataframe(cls, asset_ric: str, df: DataFrame, ref_spot: float = None, name=None):
+        """
+        Create a MarketDataVolShockScenario using an input DataFrame containing expiry dates, strikes and vol levels
+        :param asset_ric: the RIC of the asset
+        :param df: input data frame.  Expects a DataFrame indexed by date/time and containing columns expirationDate,
+        absoluteStrike and impliedVolatility.
+        :param ref_spot: the current reference spot level
+        :name: name
+        :return: MarketDataVolShockScenario
+        """
+        last_datetime = max(list(df.index))
+        df_filtered = df.loc[df.index == last_datetime]
+        df_grouped = df_filtered.groupby(['expirationDate'])
 
-    def __init__(self, scenario: Union[CarryScenario, CurveScenario, MarketDataShockBasedScenario]
-                 = None, subtract_base: bool = False):
-        super().__init__(scenario, subtract_base)
+        vol_slices = []
+        for key in df_grouped.groups:
+            value = df_grouped.get_group(key)
+            df_sorted = value.sort_values(['absoluteStrike'])
+            strikes = list(df_sorted.absoluteStrike)
+            levels = list(df_sorted.impliedVolatility)
+            vol_slice = MarketDataVolSlice(key.date(), strikes, levels)
+            vol_slices.append(vol_slice)
 
-    def _on_enter(self):
-        PricingContext.current.__enter__()
-
-    def _on_exit(self, exc_type, exc_val, exc_tb):
-        PricingContext.current.__exit__(exc_type, exc_val, exc_tb)
+        scenario = MarketDataVolShockScenario(MarketDataPattern('Eq Vol', asset_ric),
+                                              MarketDataShockType.Override, vol_slices, ref_spot, name=name)
+        return scenario

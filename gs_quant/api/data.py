@@ -14,17 +14,25 @@ specific language governing permissions and limitations
 under the License.
 """
 import datetime as dt
+import logging
 from abc import ABCMeta
+from typing import Optional, Union, List
+
 import inflection
-from typing import Optional, Union
+import pandas as pd
 
-from gs_quant.target.common import FieldFilterMap
-from gs_quant.target.data import DataQuery, MDAPIDataQuery
+from gs_quant.api.api_session import ApiWithCustomSession
+from gs_quant.api.fred.fred_query import FredQuery
+from gs_quant.base import Base
+from gs_quant.target.coordinates import MDAPIDataQuery
+from gs_quant.target.data import DataQuery
+
+_logger = logging.getLogger(__name__)
 
 
-class DataApi(metaclass=ABCMeta):
+class DataApi(ApiWithCustomSession, metaclass=ABCMeta):
     @classmethod
-    def query_data(cls, query: DataQuery, dataset_id: str = None) -> Union[list, tuple]:
+    def query_data(cls, query: Union[DataQuery, FredQuery], dataset_id: str = None) -> Union[list, tuple]:
         raise NotImplementedError('Must implement get_data')
 
     @classmethod
@@ -39,25 +47,36 @@ class DataApi(metaclass=ABCMeta):
     def time_field(cls, dataset_id: str) -> str:
         raise NotImplementedError('Must implement time_field')
 
+    @classmethod
+    def construct_dataframe_with_types(cls, dataset_id: str, data: Union[Base, list, tuple, pd.Series],
+                                       schema_varies=False, standard_fields=False) -> pd.DataFrame:
+        raise NotImplementedError('Must implement time_field')
+
     @staticmethod
     def build_query(
             start: Optional[Union[dt.date, dt.datetime]] = None,
             end: Optional[Union[dt.date, dt.datetime]] = None,
             as_of: Optional[dt.datetime] = None,
             since: Optional[dt.datetime] = None,
+            restrict_fields: bool = False,
+            format: str = 'MessagePack',
+            dates: List[dt.date] = None,
+            empty_intervals: Optional[bool] = None,
             **kwargs
     ):
         end_is_time = isinstance(end, dt.datetime)
         start_is_time = isinstance(start, dt.datetime)
 
         if kwargs.get('market_data_coordinates'):
-            if not (start is None or start_is_time) and (end is None or end_is_time):
-                raise NotImplementedError('EOD coordinates data not implemented')
-
+            real_time = ((start is None or start_is_time) and (end is None or end_is_time))
             query = MDAPIDataQuery(
-                start_time=start,
-                end_time=end,
-                format="MessagePack"
+                start_time=start if real_time else None,
+                end_time=end if real_time else None,
+                start_date=start if not real_time else None,
+                end_date=end if not real_time else None,
+                format=format,
+                real_time=real_time,
+                **kwargs
             )
         else:
             if start_is_time and end is not None and not end_is_time:
@@ -73,21 +92,24 @@ class DataApi(metaclass=ABCMeta):
                 end_time=end if end_is_time else None,
                 as_of_time=as_of,
                 since=since,
-                format="MessagePack"
+                format=format,
+                dates=dates,
+                empty_intervals=empty_intervals
             )
 
-        where = FieldFilterMap()
         query_properties = query.properties()
-        where_properties = where.properties()
-
+        query.where = dict()
         for field, value in kwargs.items():
             snake_case_field = inflection.underscore(field)
-            if snake_case_field in query_properties:
+            if snake_case_field in query_properties and snake_case_field not in ('name',):
                 setattr(query, snake_case_field, value)
-            elif snake_case_field in where_properties:
-                setattr(where, snake_case_field, value)
-                query.where = where
             else:
-                raise ValueError('Invalid query field: ' + field)
+                query.where[field] = value
+
+        if getattr(query, 'fields', None) is not None:
+            try:
+                query.restrict_fields = restrict_fields
+            except AttributeError as e:
+                _logger.debug('unable to set restrict_fields', exc_info=e)
 
         return query

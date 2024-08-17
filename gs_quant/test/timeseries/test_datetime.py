@@ -13,17 +13,20 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-
-from datetime import date
+from unittest import mock
 
 import pytest
-from pandas.util.testing import assert_series_equal
+from pandas.testing import assert_series_equal
 
+from gs_quant.test.api.test_risk import set_session
 from gs_quant.timeseries.datetime import *
 
 
-def test_align():
+def test_basic():
+    assert type(RelativeDate('0d').apply_rule()) == dt.date
 
+
+def test_align():
     dates1 = [
         date(2019, 1, 1),
         date(2019, 1, 2),
@@ -136,7 +139,6 @@ def test_align():
 
 
 def test_interpolate():
-
     dates = [
         date(2019, 1, 2),
         date(2019, 1, 3),
@@ -216,11 +218,10 @@ def test_interpolate():
         interpolate(x, x, "None")
 
     with pytest.raises(MqValueError, match="Cannot perform step interpolation on an empty series"):
-        interpolate(pd.Series(), select_dates, Interpolate.STEP)
+        interpolate(pd.Series(dtype=float), select_dates, Interpolate.STEP)
 
 
 def test_value():
-
     dates = [
         date(2019, 1, 2),
         date(2019, 1, 3),
@@ -253,7 +254,6 @@ def test_value():
 
 
 def test_day():
-
     dates = [
         date(2019, 1, 1),
         date(2019, 1, 2),
@@ -269,7 +269,6 @@ def test_day():
 
 
 def test_weekday():
-
     dates = [
         date(2019, 1, 7),
         date(2019, 1, 8),
@@ -288,7 +287,6 @@ def test_weekday():
 
 
 def test_month():
-
     dates = [
         date(2019, 1, 1),
         date(2019, 2, 1),
@@ -304,7 +302,6 @@ def test_month():
 
 
 def test_year():
-
     dates = [
         date(2019, 1, 1),
         date(2020, 1, 2),
@@ -320,7 +317,6 @@ def test_year():
 
 
 def test_quarter():
-
     dates = [
         date(2019, 1, 1),
         date(2019, 4, 1),
@@ -333,3 +329,172 @@ def test_quarter():
     result = quarter(x)
     expected = pd.Series([1, 2, 3, 4], index=dates)
     assert_series_equal(result, expected, obj="Quarter")
+
+
+def test_day_count_fractions():
+    dates = [
+        date(2019, 1, 1),
+        date(2019, 1, 2),
+        date(2019, 1, 3),
+        date(2019, 1, 4),
+        date(2019, 1, 5),
+        date(2019, 1, 6),
+    ]
+
+    x = pd.Series(dtype=float)
+    assert_series_equal(x, day_count_fractions(x))
+
+    x = pd.Series([100.0, 101, 103.02, 100.9596, 100.9596, 102.978792], index=dates)
+
+    result = day_count_fractions(x, DayCountConvention.ACTUAL_360)
+    result2 = day_count_fractions(x.index, DayCountConvention.ACTUAL_360)
+    dcf = 1 / 360
+    expected = pd.Series([np.NaN, dcf, dcf, dcf, dcf, dcf], index=dates)
+    assert_series_equal(result, expected, obj="ACT/360")
+    assert_series_equal(result2, expected, obj="ACT/360")
+
+    result = day_count_fractions(x, DayCountConvention.ACTUAL_365F)
+    dcf = 1 / 365
+    expected = pd.Series([np.NaN, dcf, dcf, dcf, dcf, dcf], index=dates)
+    assert_series_equal(result, expected, obj="ACT/365")
+
+
+def test_date_range():
+    dates = [
+        date(2019, 1, 1),
+        date(2019, 1, 2),
+        date(2019, 1, 3),
+        date(2019, 1, 4),
+        date(2019, 1, 5),
+        date(2019, 1, 6),
+    ]
+
+    values = [1.0, 2.0, 3.0, 4.0, 5.0, 7.0]
+    s0 = pd.Series(values, index=dates)
+    s1 = pd.Series(values, index=pd.date_range('2019-01-01', periods=6, freq='D').date)
+
+    for x in [s0, s1]:
+        assert (date_range(x, 0, 0) == x).all()
+        assert (date_range(x, 0, 0, True) == x.iloc[:-2]).all()
+
+        assert date_range(x, 0, date(2019, 1, 3)).index[-1] == date(2019, 1, 3)
+        assert (date_range(x, 0, date(2019, 1, 3)) == x.iloc[:3]).all()
+
+        assert date_range(x, date(2019, 1, 3), date(2019, 1, 6)).index[0] == date(2019, 1, 3)
+        assert date_range(x, date(2019, 1, 3), date(2019, 1, 6)).index[-1] == date(2019, 1, 6)
+        assert (date_range(x, date(2019, 1, 3), date(2019, 1, 6)) == x.iloc[2:6]).all()
+
+    y = pd.Series(values, index=pd.date_range('2020-10-23', periods=6, freq='D'))
+    assert (date_range(y, 1, 1, True) == y.iloc[3:5]).all()
+
+    with pytest.raises(MqValueError):
+        date_range(pd.Series([1]), 0, 0)
+
+    with pytest.raises(MqTypeError):
+        date_range(pd.Series([1]), 0, 0, 'string')
+
+
+def test_append():
+    x = pd.Series([3.1, 4.1, 5.1], index=pd.date_range('2019-01-03', '2019-01-05'))
+    y = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 7.0], index=pd.date_range('2019-01-01', "2019-01-06"))
+
+    assert_series_equal(append([]), pd.Series(dtype='float64'), obj='append empty')
+
+    assert_series_equal(append([x]), x, obj='append one series')
+
+    actual = append([x, y])
+    expected = pd.Series([3.1, 4.1, 5.1, 7.0], index=pd.date_range('2019-01-03', '2019-01-06'))
+    assert_series_equal(actual, expected, obj='append two series')
+
+    x = pd.Series([3.1, 4.1, 5.1], index=pd.date_range('2019-01-01 02:00', periods=3, freq='H'))
+    y = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 7.0], index=pd.date_range('2019-01-01', periods=6, freq='H'))
+
+    actual = append([x, y])
+    expected = pd.Series([3.1, 4.1, 5.1, 7.0], index=pd.date_range('2019-01-01 02:00', periods=4, freq='H'))
+    assert_series_equal(actual, expected, obj='append two real-time series')
+
+
+def test_prepend():
+    x = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 7.0], index=pd.date_range('2019-01-01', "2019-01-06"))
+    y = pd.Series([3.1, 4.1, 5.1], index=pd.date_range('2019-01-03', '2019-01-05'))
+
+    assert_series_equal(prepend([]), pd.Series(dtype='float64'), obj='prepend empty')
+
+    assert_series_equal(prepend([x]), x, obj='prepend one series')
+
+    actual = prepend([x, y])
+    expected = pd.Series([1.0, 2.0, 3.1, 4.1, 5.1], index=pd.date_range('2019-01-01', '2019-01-05'))
+    assert_series_equal(actual, expected, obj='prepend two series')
+
+    x = pd.Series([1.0, 2.0, 3.0, 4.0, 5.0, 7.0], index=pd.date_range('2019-01-01', periods=6, freq='H'))
+    y = pd.Series([3.1, 4.1, 5.1], index=pd.date_range('2019-01-01 02:00', periods=3, freq='H'))
+
+    actual = prepend([x, y])
+    expected = pd.Series([1.0, 2.0, 3.1, 4.1, 5.1], index=pd.date_range('2019-01-01', periods=5, freq='H'))
+    assert_series_equal(actual, expected, obj='prepend two real-time series')
+
+
+def test_union():
+    x = pd.Series([3.1, 4.1, np.nan], index=pd.date_range('2019-01-03', '2019-01-05'))
+    y = pd.Series([1.0, np.nan, 3.0, 4.0, 5.0, 6.0], index=pd.date_range('2019-01-01', "2019-01-06"))
+    z = pd.Series([60.0, 70.0], index=pd.date_range('2019-01-06', "2019-01-07"))
+
+    assert_series_equal(union([]), pd.Series(dtype='float64'), obj='union empty')
+
+    x.index.freq = None
+    assert_series_equal(union([x]), x, obj='union of one series')
+
+    actual = union([x, y, z])
+    expected = pd.Series([1.0, np.nan, 3.1, 4.1, 5.0, 6.0, 70], index=pd.date_range('2019-01-01', '2019-01-07'))
+    assert_series_equal(actual, expected, obj='union of three series')
+
+    x = pd.Series([3.1, 4.1, np.nan], index=pd.date_range('2019-01-01 02:00', periods=3, freq='H'))
+    y = pd.Series([1.0, np.nan, 3.0, 4.0, 5.0, 6.0], index=pd.date_range('2019-01-01', periods=6, freq='H'))
+
+    actual = union([x, y])
+    expected = pd.Series([1.0, np.nan, 3.1, 4.1, 5.0, 6.0], index=pd.date_range('2019-01-01', periods=6, freq='H'))
+    assert_series_equal(actual, expected, obj='union of two real-time series')
+
+
+def test_bucketize():
+    dates = pd.bdate_range(start='1/1/2021', end='4/23/2021')
+    series = pd.Series(range(len(dates)), index=dates)
+
+    actual = bucketize(series, AggregateFunction.MAX, AggregatePeriod.MONTH)
+    expected_index = pd.DatetimeIndex([date(2021, 1, 31), date(2021, 2, 28), date(2021, 3, 31), date(2021, 4, 23)])
+    expected = pd.Series([20, 40, 63, 80], index=expected_index)
+    actual.index.freq = None  # Ignore the index freq
+    assert_series_equal(actual, expected, check_index_type=False)
+
+
+def test_day_count():
+    assert day_count(dt.date(2021, 5, 7), dt.date(2021, 5, 10)) == 1
+    assert day_count(dt.date(2021, 5, 10), dt.date(2021, 5, 14)) == 4
+    assert day_count(dt.date(2021, 5, 10), dt.date(2021, 5, 17)) == 5
+
+    with pytest.raises(MqValueError):
+        day_count(dt.date(2021, 5, 7), '2021-05-10')
+
+
+@mock.patch.object(Dataset, 'get_data')
+def test_align_calendar(mocker):
+    dates = pd.date_range(start='1/1/2023', end='1/31/2023')
+    series = pd.Series(range(len(dates)), index=dates)
+
+    set_session()
+    mocker.return_value = pd.DataFrame(index=[dt.datetime(2023, 1, 3)],
+                                       data={'holiday': 'New Year'})
+
+    GsCalendar.reset()
+
+    aligned_series = align_calendar(series, 'NYC')
+    # Check if the holiday was removed
+    assert dt.datetime(2023, 1, 3) not in aligned_series
+    # Check the first saturday was removed
+    assert dt.datetime(2023, 1, 7) not in aligned_series
+    # Check full series length is correct
+    assert aligned_series.size == 21
+
+
+if __name__ == "__main__":
+    pytest.main(args=["test_datetime.py"])

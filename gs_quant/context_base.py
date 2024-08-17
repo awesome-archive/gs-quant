@@ -15,70 +15,99 @@ under the License.
 """
 
 import threading
-from abc import ABCMeta
 
-from gs_quant.errors import MqUninitialisedError
+from gs_quant.errors import MqUninitialisedError, MqValueError
 
 thread_local = threading.local()
 
 
-class ContextMeta(type, metaclass=ABCMeta):
-
-    @classmethod
-    def has_default(mcs) -> bool:
-        return False
+class ContextMeta(type):
 
     @property
-    def current(cls) -> 'ContextBase':
+    def __path_key(cls) -> str:
+        return '{}_path'.format(cls.__name__)
+
+    @property
+    def __default_key(cls) -> str:
+        return '{}_default'.format(cls.__name__)
+
+    @classmethod
+    def default_value(mcs) -> object:
+        return None
+
+    @property
+    def path(cls) -> tuple:
+        return getattr(thread_local, cls.__path_key, ())
+
+    @property
+    def current(cls):
         """
         The current instance of this context
         """
-        current = getattr(thread_local, '{}_current'.format(cls.__name__), None) or cls.default
+        path = cls.path
+        current = cls.__default if not path else next(iter(path))
         if current is None:
             raise MqUninitialisedError('{} is not initialised'.format(cls.__name__))
 
         return current
 
     @current.setter
-    def current(cls, current: 'ContextBase'):
-        setattr(thread_local, '{}_current'.format(cls.__name__), current)
+    def current(cls, current):
+        path = cls.path
+        if cls.has_prior:
+            raise MqValueError('Cannot set current while in a nested context {}'.format(cls.__name__))
+
+        if len(path) == 1:
+            cur = cls.current
+            try:
+                if cur.is_entered:
+                    raise MqValueError('Cannot set current while in a nested context {}'.format(cls.__name__))
+            except AttributeError:
+                pass
+
+        setattr(thread_local, cls.__path_key, (current,))
 
     @property
     def current_is_set(cls) -> bool:
-        return getattr(thread_local, '{}_current'.format(cls.__name__), None) is not None
+        return bool(cls.path) or cls.__default is not None
 
     @property
-    def default(cls) -> 'ContextBase':
-        attr_name = '{}_default'.format(cls.__name__)
-        default = getattr(thread_local, attr_name, None)
-        if (not cls.default_is_set) and cls.has_default():
-            default = cls()
-            setattr(thread_local, attr_name, default)
+    def __default(cls):
+        default = getattr(thread_local, cls.__default_key, None)
+        if default is None:
+            default = cls.default_value()
+            if default is not None:
+                setattr(thread_local, cls.__default_key, default)
 
         return default
 
     @property
-    def default_is_set(cls) -> bool:
-        return getattr(thread_local, '{}_default'.format(cls.__name__), None) is not None
+    def prior(cls):
+        path = cls.path
+        if len(path) < 2:
+            raise MqValueError('Current {} has no prior'.format(cls.__name__))
 
-    @default.setter
-    def default(cls, default: 'ContextBase'):
-        setattr(thread_local, '{}_default'.format(cls.__name__), default)
+        return path[1]
+
+    @property
+    def has_prior(cls):
+        path = cls.path
+        return len(path) >= 2
+
+    def push(cls, context):
+        setattr(thread_local, cls.__path_key, (context,) + cls.path)
+
+    def pop(cls):
+        path = cls.path
+        setattr(thread_local, cls.__path_key, path[1:])
+        return path[0]
 
 
 class ContextBase(metaclass=ContextMeta):
 
     def __enter__(self):
-        clz = self._cls
-
-        try:
-            current = clz.current
-            setattr(thread_local, '{}_previous'.format(clz.__name__), current)
-        except MqUninitialisedError:
-            pass
-
-        setattr(thread_local, '{}_entered'.format(clz.__name__), True)
-        clz.current = self
+        self._cls.push(self)
+        setattr(thread_local, self.__entered_key, True)
         self._on_enter()
         return self
 
@@ -86,19 +115,47 @@ class ContextBase(metaclass=ContextMeta):
         try:
             self._on_exit(exc_type, exc_val, exc_tb)
         finally:
-            clz = self._cls
-            clz.current = getattr(thread_local, '{}_previous'.format(clz.__name__), None)
-            setattr(thread_local, '{}_previous'.format(clz.__name__), None)
-            setattr(thread_local, '{}_entered'.format(clz.__name__), False)
+            self._cls.pop()
+            setattr(thread_local, self.__entered_key, False)
+
+    async def __aenter__(self):
+        self._cls.push(self)
+        setattr(thread_local, self.__entered_key, True)
+        await self._on_aenter()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        try:
+            await self._on_aexit(exc_type, exc_val, exc_tb)
+        finally:
+            self._cls.pop()
+            setattr(thread_local, self.__entered_key, False)
+
+    @property
+    def __entered_key(self) -> str:
+        return '{}_entered'.format(id(self))
 
     @property
     def _cls(self) -> ContextMeta:
-        cls = next(b for b in self.__class__.__bases__ if issubclass(b, ContextBase))
-        return self.__class__ if cls.__name__ in ('ContextBase', 'ContextBaseWithDefault') else cls
+        seen = set()
+        stack = [self.__class__]
+        cls = None
+
+        while stack:
+            base = stack.pop()
+            if ContextBase in base.__bases__ or ContextBaseWithDefault in base.__bases__:
+                cls = base
+                break
+
+            if base not in seen:
+                seen.add(base)
+                stack.extend(b for b in base.__bases__ if issubclass(b, ContextBase))
+
+        return cls or self.__class__
 
     @property
-    def _is_entered(self) -> bool:
-        return getattr(thread_local, '{}_entered'.format(self._cls.__name__), False)
+    def is_entered(self) -> bool:
+        return getattr(thread_local, self.__entered_key, False)
 
     def _on_enter(self):
         pass
@@ -106,12 +163,18 @@ class ContextBase(metaclass=ContextMeta):
     def _on_exit(self, exc_type, exc_val, exc_tb):
         pass
 
+    async def _on_aenter(self):
+        pass
+
+    async def _on_aexit(self, exc_type, exc_val, exc_tb):
+        pass
+
 
 class ContextBaseWithDefault(ContextBase):
 
     @classmethod
-    def has_default(cls) -> bool:
-        return True
+    def default_value(cls) -> object:
+        return cls()
 
 
 try:

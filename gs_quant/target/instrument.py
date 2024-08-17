@@ -14,2615 +14,2318 @@ specific language governing permissions and limitations
 under the License.
 """
 
-from gs_quant.target.common import *
+from gs_quant.base import *
+from gs_quant.common import *
 import datetime
-from typing import Tuple, Union
-from gs_quant.instrument import Instrument
-from gs_quant.base import camel_case_translate, get_enum_value
-
-
-class CSLPython(Instrument):
-        
-    """Object representation of an arbitrary payoff defined in Python"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        class_name: str = None,
-        denominated: Union[Currency, str] = None,
-        double_params: Tuple[CSLDouble, ...] = None,
-        date_params: Tuple[CSLDate, ...] = None,
-        string_params: Tuple[CSLString, ...] = None,
-        simple_schedule_params: Tuple[CSLSimpleSchedule, ...] = None,
-        schedule_params: Tuple[CSLSchedule, ...] = None,
-        currency_params: Tuple[CSLCurrency, ...] = None,
-        stock_params: Tuple[CSLStock, ...] = None,
-        index_params: Tuple[CSLIndex, ...] = None,
-        fx_cross_params: Tuple[CSLFXCross, ...] = None,
-        double_array_params: Tuple[CSLDoubleArray, ...] = None,
-        date_array_params: Tuple[CSLDateArray, ...] = None,
-        string_array_params: Tuple[CSLStringArray, ...] = None,
-        simple_schedule_array_params: Tuple[CSLSimpleScheduleArray, ...] = None,
-        schedule_array_params: Tuple[CSLScheduleArray, ...] = None,
-        currency_array_params: Tuple[CSLCurrencyArray, ...] = None,
-        stock_array_params: Tuple[CSLStockArray, ...] = None,
-        index_array_params: Tuple[CSLIndexArray, ...] = None,
-        fx_cross_array_params: Tuple[CSLFXCrossArray, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.class_name = class_name
-        self.denominated = denominated
-        self.double_params = double_params
-        self.date_params = date_params
-        self.string_params = string_params
-        self.simple_schedule_params = simple_schedule_params
-        self.schedule_params = schedule_params
-        self.currency_params = currency_params
-        self.stock_params = stock_params
-        self.index_params = index_params
-        self.fx_cross_params = fx_cross_params
-        self.double_array_params = double_array_params
-        self.date_array_params = date_array_params
-        self.string_array_params = string_array_params
-        self.simple_schedule_array_params = simple_schedule_array_params
-        self.schedule_array_params = schedule_array_params
-        self.currency_array_params = currency_array_params
-        self.stock_array_params = stock_array_params
-        self.index_array_params = index_array_params
-        self.fx_cross_array_params = fx_cross_array_params
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Cross Asset"""
-        return AssetClass.Cross_Asset        
-
-    @property
-    def type(self) -> AssetType:
-        """CSL"""
-        return AssetType.CSL        
-
-    @property
-    def class_name(self) -> str:
-        """A reference to the Python script defining this payoff class"""
-        return self.__class_name
-
-    @class_name.setter
-    def class_name(self, value: str):
-        self._property_changed('class_name')
-        self.__class_name = value        
-
-    @property
-    def denominated(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__denominated
-
-    @denominated.setter
-    def denominated(self, value: Union[Currency, str]):
-        self._property_changed('denominated')
-        self.__denominated = get_enum_value(Currency, value)        
-
-    @property
-    def double_params(self) -> Tuple[CSLDouble, ...]:
-        """A double"""
-        return self.__double_params
-
-    @double_params.setter
-    def double_params(self, value: Tuple[CSLDouble, ...]):
-        self._property_changed('double_params')
-        self.__double_params = value        
-
-    @property
-    def date_params(self) -> Tuple[CSLDate, ...]:
-        """A date"""
-        return self.__date_params
-
-    @date_params.setter
-    def date_params(self, value: Tuple[CSLDate, ...]):
-        self._property_changed('date_params')
-        self.__date_params = value        
-
-    @property
-    def string_params(self) -> Tuple[CSLString, ...]:
-        """A string"""
-        return self.__string_params
-
-    @string_params.setter
-    def string_params(self, value: Tuple[CSLString, ...]):
-        self._property_changed('string_params')
-        self.__string_params = value        
-
-    @property
-    def simple_schedule_params(self) -> Tuple[CSLSimpleSchedule, ...]:
-        """A fixing date, settlement date pair"""
-        return self.__simple_schedule_params
-
-    @simple_schedule_params.setter
-    def simple_schedule_params(self, value: Tuple[CSLSimpleSchedule, ...]):
-        self._property_changed('simple_schedule_params')
-        self.__simple_schedule_params = value        
-
-    @property
-    def schedule_params(self) -> Tuple[CSLSchedule, ...]:
-        """A schedule"""
-        return self.__schedule_params
-
-    @schedule_params.setter
-    def schedule_params(self, value: Tuple[CSLSchedule, ...]):
-        self._property_changed('schedule_params')
-        self.__schedule_params = value        
-
-    @property
-    def currency_params(self) -> Tuple[CSLCurrency, ...]:
-        """A currency"""
-        return self.__currency_params
-
-    @currency_params.setter
-    def currency_params(self, value: Tuple[CSLCurrency, ...]):
-        self._property_changed('currency_params')
-        self.__currency_params = value        
-
-    @property
-    def stock_params(self) -> Tuple[CSLStock, ...]:
-        """A stock"""
-        return self.__stock_params
-
-    @stock_params.setter
-    def stock_params(self, value: Tuple[CSLStock, ...]):
-        self._property_changed('stock_params')
-        self.__stock_params = value        
-
-    @property
-    def index_params(self) -> Tuple[CSLIndex, ...]:
-        """An index"""
-        return self.__index_params
-
-    @index_params.setter
-    def index_params(self, value: Tuple[CSLIndex, ...]):
-        self._property_changed('index_params')
-        self.__index_params = value        
-
-    @property
-    def fx_cross_params(self) -> Tuple[CSLFXCross, ...]:
-        """An FX cross"""
-        return self.__fx_cross_params
-
-    @fx_cross_params.setter
-    def fx_cross_params(self, value: Tuple[CSLFXCross, ...]):
-        self._property_changed('fx_cross_params')
-        self.__fx_cross_params = value        
-
-    @property
-    def double_array_params(self) -> Tuple[CSLDoubleArray, ...]:
-        """An array of doubles"""
-        return self.__double_array_params
-
-    @double_array_params.setter
-    def double_array_params(self, value: Tuple[CSLDoubleArray, ...]):
-        self._property_changed('double_array_params')
-        self.__double_array_params = value        
-
-    @property
-    def date_array_params(self) -> Tuple[CSLDateArray, ...]:
-        """An array of dates"""
-        return self.__date_array_params
-
-    @date_array_params.setter
-    def date_array_params(self, value: Tuple[CSLDateArray, ...]):
-        self._property_changed('date_array_params')
-        self.__date_array_params = value        
-
-    @property
-    def string_array_params(self) -> Tuple[CSLStringArray, ...]:
-        """An array of strings"""
-        return self.__string_array_params
-
-    @string_array_params.setter
-    def string_array_params(self, value: Tuple[CSLStringArray, ...]):
-        self._property_changed('string_array_params')
-        self.__string_array_params = value        
-
-    @property
-    def simple_schedule_array_params(self) -> Tuple[CSLSimpleScheduleArray, ...]:
-        """An array of simple schedules"""
-        return self.__simple_schedule_array_params
-
-    @simple_schedule_array_params.setter
-    def simple_schedule_array_params(self, value: Tuple[CSLSimpleScheduleArray, ...]):
-        self._property_changed('simple_schedule_array_params')
-        self.__simple_schedule_array_params = value        
-
-    @property
-    def schedule_array_params(self) -> Tuple[CSLScheduleArray, ...]:
-        """An array of schedules"""
-        return self.__schedule_array_params
-
-    @schedule_array_params.setter
-    def schedule_array_params(self, value: Tuple[CSLScheduleArray, ...]):
-        self._property_changed('schedule_array_params')
-        self.__schedule_array_params = value        
-
-    @property
-    def currency_array_params(self) -> Tuple[CSLCurrencyArray, ...]:
-        """An array of currencies"""
-        return self.__currency_array_params
-
-    @currency_array_params.setter
-    def currency_array_params(self, value: Tuple[CSLCurrencyArray, ...]):
-        self._property_changed('currency_array_params')
-        self.__currency_array_params = value        
-
-    @property
-    def stock_array_params(self) -> Tuple[CSLStockArray, ...]:
-        """An array of stocks"""
-        return self.__stock_array_params
-
-    @stock_array_params.setter
-    def stock_array_params(self, value: Tuple[CSLStockArray, ...]):
-        self._property_changed('stock_array_params')
-        self.__stock_array_params = value        
-
-    @property
-    def index_array_params(self) -> Tuple[CSLIndexArray, ...]:
-        """An array of indices"""
-        return self.__index_array_params
-
-    @index_array_params.setter
-    def index_array_params(self, value: Tuple[CSLIndexArray, ...]):
-        self._property_changed('index_array_params')
-        self.__index_array_params = value        
-
-    @property
-    def fx_cross_array_params(self) -> Tuple[CSLFXCrossArray, ...]:
-        """An array of FX crosses"""
-        return self.__fx_cross_array_params
-
-    @fx_cross_array_params.setter
-    def fx_cross_array_params(self, value: Tuple[CSLFXCrossArray, ...]):
-        self._property_changed('fx_cross_array_params')
-        self.__fx_cross_array_params = value        
-
-
-class CommodSwap(Instrument):
-        
-    """Object representation of a commodities swap"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        commodity: Union[CommodityAsset, str] = None,
-        start: Union[datetime.date, str] = None,
-        commodity_reference_price: str = None,
-        notional_amount: float = 1000000.0,
-        currency: Union[Currency, str] = None,
-        calculation_periods: int = None,
-        calculation_period_frequency: Union[Frequency, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.commodity = commodity
-        self.start = start
-        self.commodity_reference_price = commodity_reference_price
-        self.notional_amount = notional_amount
-        self.currency = currency
-        self.calculation_periods = calculation_periods
-        self.calculation_period_frequency = calculation_period_frequency
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Commod"""
-        return AssetClass.Commod        
-
-    @property
-    def type(self) -> AssetType:
-        """Swap"""
-        return AssetType.Swap        
-
-    @property
-    def commodity(self) -> Union[CommodityAsset, str]:
-        """Commodity asset"""
-        return self.__commodity
-
-    @commodity.setter
-    def commodity(self, value: Union[CommodityAsset, str]):
-        self._property_changed('commodity')
-        self.__commodity = get_enum_value(CommodityAsset, value)        
-
-    @property
-    def start(self) -> Union[datetime.date, str]:
-        return self.__start
-
-    @start.setter
-    def start(self, value: Union[datetime.date, str]):
-        self._property_changed('start')
-        self.__start = value        
-
-    @property
-    def commodity_reference_price(self) -> str:
-        return self.__commodity_reference_price
-
-    @commodity_reference_price.setter
-    def commodity_reference_price(self, value: str):
-        self._property_changed('commodity_reference_price')
-        self.__commodity_reference_price = value        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__currency
-
-    @currency.setter
-    def currency(self, value: Union[Currency, str]):
-        self._property_changed('currency')
-        self.__currency = get_enum_value(Currency, value)        
-
-    @property
-    def calculation_periods(self) -> int:
-        """The number of calculation periods"""
-        return self.__calculation_periods
-
-    @calculation_periods.setter
-    def calculation_periods(self, value: int):
-        self._property_changed('calculation_periods')
-        self.__calculation_periods = value        
-
-    @property
-    def calculation_period_frequency(self) -> Union[Frequency, str]:
-        """The frequency of the calculation periods"""
-        return self.__calculation_period_frequency
-
-    @calculation_period_frequency.setter
-    def calculation_period_frequency(self, value: Union[Frequency, str]):
-        self._property_changed('calculation_period_frequency')
-        self.__calculation_period_frequency = get_enum_value(Frequency, value)        
-
-
-class CommodVarianceSwap(Instrument):
-        
-    """Object representation of a commodities volitility / variance swap"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        side: Union[BuySell, str] = None,
-        notional: float = 1,
-        notional_currency: Union[Currency, str] = None,
-        asset: Union[CommodityAsset, str] = None,
-        asset_fixing_source: str = None,
-        contract: str = None,
-        fixing_currency: Union[Currency, str] = None,
-        fx_fixing_source: str = None,
-        settlement_date: Union[datetime.date, str] = None,
-        strike: Union[float, str] = None,
-        variance_convention: Union[VarianceConvention, str] = None,
-        annualization_factor: float = None,
-        divisor: str = None,
-        start_date: datetime.date = None,
-        end_date: Union[datetime.date, str] = None,
-        mean_rule: Union[CommodityMeanRule, str] = None,
-        fixed_mean: float = None,
-        first_fixing: float = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.side = side
-        self.notional = notional
-        self.notional_currency = notional_currency
-        self.asset = asset
-        self.asset_fixing_source = asset_fixing_source
-        self.contract = contract
-        self.fixing_currency = fixing_currency
-        self.fx_fixing_source = fx_fixing_source
-        self.settlement_date = settlement_date
-        self.strike = strike
-        self.variance_convention = variance_convention
-        self.annualization_factor = annualization_factor
-        self.divisor = divisor
-        self.start_date = start_date
-        self.end_date = end_date
-        self.mean_rule = mean_rule
-        self.fixed_mean = fixed_mean
-        self.first_fixing = first_fixing
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Commod"""
-        return AssetClass.Commod        
-
-    @property
-    def type(self) -> AssetType:
-        """VarianceSwap"""
-        return AssetType.VarianceSwap        
-
-    @property
-    def side(self) -> Union[BuySell, str]:
-        """Buy or Sell side of contract"""
-        return self.__side
-
-    @side.setter
-    def side(self, value: Union[BuySell, str]):
-        self._property_changed('side')
-        self.__side = get_enum_value(BuySell, value)        
-
-    @property
-    def notional(self) -> float:
-        """The notional amount of the variance swap"""
-        return self.__notional
-
-    @notional.setter
-    def notional(self, value: float):
-        self._property_changed('notional')
-        self.__notional = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """The currency of the notional amount"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def asset(self) -> Union[CommodityAsset, str]:
-        """Commodity asset"""
-        return self.__asset
-
-    @asset.setter
-    def asset(self, value: Union[CommodityAsset, str]):
-        self._property_changed('asset')
-        self.__asset = get_enum_value(CommodityAsset, value)        
-
-    @property
-    def asset_fixing_source(self) -> str:
-        return self.__asset_fixing_source
-
-    @asset_fixing_source.setter
-    def asset_fixing_source(self, value: str):
-        self._property_changed('asset_fixing_source')
-        self.__asset_fixing_source = value        
-
-    @property
-    def contract(self) -> str:
-        """The contract we are observing (e.g. Z24)"""
-        return self.__contract
-
-    @contract.setter
-    def contract(self, value: str):
-        self._property_changed('contract')
-        self.__contract = value        
-
-    @property
-    def fixing_currency(self) -> Union[Currency, str]:
-        """The currency in which we observe the fix"""
-        return self.__fixing_currency
-
-    @fixing_currency.setter
-    def fixing_currency(self, value: Union[Currency, str]):
-        self._property_changed('fixing_currency')
-        self.__fixing_currency = get_enum_value(Currency, value)        
-
-    @property
-    def fx_fixing_source(self) -> str:
-        """The source to use in the condition that the fixing currency is different from
-           the underlying currency"""
-        return self.__fx_fixing_source
-
-    @fx_fixing_source.setter
-    def fx_fixing_source(self, value: str):
-        self._property_changed('fx_fixing_source')
-        self.__fx_fixing_source = value        
-
-    @property
-    def settlement_date(self) -> Union[datetime.date, str]:
-        """Settlement date of the trade"""
-        return self.__settlement_date
-
-    @settlement_date.setter
-    def settlement_date(self, value: Union[datetime.date, str]):
-        self._property_changed('settlement_date')
-        self.__settlement_date = value        
-
-    @property
-    def strike(self) -> Union[float, str]:
-        """The strike in variance, default to ATM"""
-        return self.__strike
-
-    @strike.setter
-    def strike(self, value: Union[float, str]):
-        self._property_changed('strike')
-        self.__strike = value        
-
-    @property
-    def variance_convention(self) -> Union[VarianceConvention, str]:
-        """'Annualized' to annualize the variance (using Annualization Factor) or 'total'
-           for no annualization'"""
-        return self.__variance_convention
-
-    @variance_convention.setter
-    def variance_convention(self, value: Union[VarianceConvention, str]):
-        self._property_changed('variance_convention')
-        self.__variance_convention = get_enum_value(VarianceConvention, value)        
-
-    @property
-    def annualization_factor(self) -> float:
-        """Annualization factor used to compute variance, defaults to 252"""
-        return self.__annualization_factor
-
-    @annualization_factor.setter
-    def annualization_factor(self, value: float):
-        self._property_changed('annualization_factor')
-        self.__annualization_factor = value        
-
-    @property
-    def divisor(self) -> str:
-        """Number of returns or Number of returns - 1"""
-        return self.__divisor
-
-    @divisor.setter
-    def divisor(self, value: str):
-        self._property_changed('divisor')
-        self.__divisor = value        
-
-    @property
-    def start_date(self) -> datetime.date:
-        """The start date of the observation"""
-        return self.__start_date
-
-    @start_date.setter
-    def start_date(self, value: datetime.date):
-        self._property_changed('start_date')
-        self.__start_date = value        
-
-    @property
-    def end_date(self) -> Union[datetime.date, str]:
-        """The end date of the observation"""
-        return self.__end_date
-
-    @end_date.setter
-    def end_date(self, value: Union[datetime.date, str]):
-        self._property_changed('end_date')
-        self.__end_date = value        
-
-    @property
-    def mean_rule(self) -> Union[CommodityMeanRule, str]:
-        """Commodity mean rule"""
-        return self.__mean_rule
-
-    @mean_rule.setter
-    def mean_rule(self, value: Union[CommodityMeanRule, str]):
-        self._property_changed('mean_rule')
-        self.__mean_rule = get_enum_value(CommodityMeanRule, value)        
-
-    @property
-    def fixed_mean(self) -> float:
-        """True if we want to specify the mean to be used in variance computation"""
-        return self.__fixed_mean
-
-    @fixed_mean.setter
-    def fixed_mean(self, value: float):
-        self._property_changed('fixed_mean')
-        self.__fixed_mean = value        
-
-    @property
-    def first_fixing(self) -> float:
-        """By default there is none, if populate would use it as the first fixing"""
-        return self.__first_fixing
-
-    @first_fixing.setter
-    def first_fixing(self, value: float):
-        self._property_changed('first_fixing')
-        self.__first_fixing = value        
-
-
+from typing import Dict, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from dataclasses_json import LetterCase, config, dataclass_json
+from gs_quant.instrument.core import Instrument
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqSyntheticOETTerms(Instrument):
+    client_fee: Optional[str] = field(default=None, metadata=field_metadata)
+    client_notice: Optional[str] = field(default=None, metadata=field_metadata)
+    client_terms: Optional[str] = field(default=None, metadata=field_metadata)
+    firm_fee: Optional[str] = field(default=None, metadata=field_metadata)
+    firm_notice: Optional[str] = field(default=None, metadata=field_metadata)
+    firm_terms: Optional[str] = field(default=None, metadata=field_metadata)
+    oet_type: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SyntheticOETTerms, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqSyntheticSchedule(Instrument):
+    period: Optional[str] = field(default=None, metadata=field_metadata)
+    delay: Optional[str] = field(default=None, metadata=field_metadata)
+    date_rule: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SyntheticSchedule, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXCorrelationSwapLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CorrelationSwapLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class AssetRef(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    product_code: Optional[ProductCode] = field(default=None, metadata=field_metadata)
+    size: Optional[float] = field(default=None, metadata=field_metadata)
+    asset_id: Optional[str] = field(default=None, metadata=field_metadata)
+    number_of_options: Optional[float] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cross_Asset, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Any, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class Bond(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    identifier: Optional[str] = field(default=None, metadata=field_metadata)
+    identifier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    size: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cross_Asset, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Bond, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class Cash(Instrument):
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    payment_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cash, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Cash, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodIndexSwap(Instrument):
+    index: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days: Optional[int] = field(default=None, metadata=field_metadata)
+    settlement_days_after: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days_type: Optional[str] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    reset_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    reset_day: Optional[int] = field(default=None, metadata=field_metadata)
+    reset_frequency_multiplier: Optional[int] = field(default=None, metadata=field_metadata)
+    index_name_source: Optional[str] = field(default=None, metadata=field_metadata)
+    execution_method_name: Optional[str] = field(default=None, metadata=field_metadata)
+    execution_method_start_time: Optional[str] = field(default=None, metadata=field_metadata)
+    execution_method_end_time: Optional[str] = field(default=None, metadata=field_metadata)
+    execution_method_location: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.IndexSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCOptionPeriod(Instrument):
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionPeriod, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCSwapLeg(Instrument):
+    fixing_currency: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    leg_description: Optional[str] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency_source: Optional[str] = field(default=None, metadata=field_metadata)
+    underlier: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity_multiplier: Optional[int] = field(default=None, metadata=field_metadata)
+    fixed_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SwapLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCSwapPeriod(Instrument):
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SwapPeriod, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodSwapData(Instrument):
+    commodity: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency_source: Optional[str] = field(default=None, metadata=field_metadata)
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_type: Optional[str] = field(default=None, metadata=field_metadata)
+    number_of_periods: Optional[int] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_price_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    commodity_reference_price: Optional[str] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity_period: Optional[Period] = field(default=None, metadata=field_metadata)
+    strategy: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    buy_sells: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    underlier_short_name: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_days_type: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days_from: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    currency_summary: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    native_quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SwapData, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqAutoroll(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    last_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixing_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    trigger_level: Optional[float] = field(default=None, metadata=field_metadata)
+    buffer_level: Optional[float] = field(default=None, metadata=field_metadata)
+    local_return_cap: Optional[float] = field(default=None, metadata=field_metadata)
+    upside_leverage: Optional[float] = field(default=None, metadata=field_metadata)
+    initial_fixing_override: Optional[float] = field(default=None, metadata=field_metadata)
+    apply_trigger_level_shift: Optional[str] = field(default=None, metadata=field_metadata)
+    trigger_level_shift: Optional[float] = field(default=None, metadata=field_metadata)
+    notional: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    business_day_calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    payment_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Autoroll, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqBarrier(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    barrier_start_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    barrier_end_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knock_up_or_down: Optional[UpDown] = field(default=None, metadata=field_metadata)
+    barrier_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    knock_in_or_out: Optional[InOut] = field(default=None, metadata=field_metadata)
+    number_of_options: Optional[float] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    currency: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Barrier, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqBinary(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    currency: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Binary, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class EqCliquet(Instrument):
-        
-    """Object representation of an Equity Cliquet"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        asset: str = None,
-        expiration_date: Union[datetime.date, str] = None,
-        strike_price: float = None,
-        currency: Union[Currency, str] = None,
-        first_valuation_date: datetime.date = None,
-        global_floor: float = -1000000,
-        global_cap: float = 1000000,
-        last_valuation_date: datetime.date = None,
-        notional_amount: float = 1000000,
-        payment_frequency: str = 'Maturity',
-        return_style: str = 'Rate of Return',
-        return_type: str = 'Sum',
-        valuation_period: str = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.asset = asset
-        self.expiration_date = expiration_date
-        self.strike_price = strike_price
-        self.currency = currency
-        self.first_valuation_date = first_valuation_date
-        self.global_floor = global_floor
-        self.global_cap = global_cap
-        self.last_valuation_date = last_valuation_date
-        self.notional_amount = notional_amount
-        self.payment_frequency = payment_frequency
-        self.return_style = return_style
-        self.return_type = return_type
-        self.valuation_period = valuation_period
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Equity"""
-        return AssetClass.Equity        
-
-    @property
-    def type(self) -> AssetType:
-        """Cliquet"""
-        return AssetType.Cliquet        
-
-    @property
-    def asset(self) -> str:
-        """Ticker of the underlying stock or index"""
-        return self.__asset
-
-    @asset.setter
-    def asset(self, value: str):
-        self._property_changed('asset')
-        self.__asset = value        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def strike_price(self) -> float:
-        """Strike price as value"""
-        return self.__strike_price
-
-    @strike_price.setter
-    def strike_price(self, value: float):
-        self._property_changed('strike_price')
-        self.__strike_price = value        
-
-    @property
-    def currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__currency
-
-    @currency.setter
-    def currency(self, value: Union[Currency, str]):
-        self._property_changed('currency')
-        self.__currency = get_enum_value(Currency, value)        
-
-    @property
-    def first_valuation_date(self) -> datetime.date:
-        """ISO 8601-formatted date"""
-        return self.__first_valuation_date
-
-    @first_valuation_date.setter
-    def first_valuation_date(self, value: datetime.date):
-        self._property_changed('first_valuation_date')
-        self.__first_valuation_date = value        
-
-    @property
-    def global_floor(self) -> float:
-        """Global Floor of return, relevant only if paying at maturity"""
-        return self.__global_floor
-
-    @global_floor.setter
-    def global_floor(self, value: float):
-        self._property_changed('global_floor')
-        self.__global_floor = value        
-
-    @property
-    def global_cap(self) -> float:
-        """Global Cap of return, relevant only if paying at maturity"""
-        return self.__global_cap
-
-    @global_cap.setter
-    def global_cap(self, value: float):
-        self._property_changed('global_cap')
-        self.__global_cap = value        
-
-    @property
-    def last_valuation_date(self) -> datetime.date:
-        """ISO 8601-formatted date"""
-        return self.__last_valuation_date
-
-    @last_valuation_date.setter
-    def last_valuation_date(self, value: datetime.date):
-        self._property_changed('last_valuation_date')
-        self.__last_valuation_date = value        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional of this position"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def payment_frequency(self) -> str:
-        return self.__payment_frequency
-
-    @payment_frequency.setter
-    def payment_frequency(self, value: str):
-        self._property_changed('payment_frequency')
-        self.__payment_frequency = value        
-
-    @property
-    def return_style(self) -> str:
-        """Return calculation style"""
-        return self.__return_style
-
-    @return_style.setter
-    def return_style(self, value: str):
-        self._property_changed('return_style')
-        self.__return_style = value        
-
-    @property
-    def return_type(self) -> str:
-        """Sum or Product of periodic return, relevant only if paying at maturity"""
-        return self.__return_type
-
-    @return_type.setter
-    def return_type(self, value: str):
-        self._property_changed('return_type')
-        self.__return_type = value        
-
-    @property
-    def valuation_period(self) -> str:
-        """Tenor"""
-        return self.__valuation_period
-
-    @valuation_period.setter
-    def valuation_period(self, value: str):
-        self._property_changed('valuation_period')
-        self.__valuation_period = value        
+    return_style: Optional[ReturnStyle] = field(default=ReturnStyle.Rate_of_Return, metadata=field_metadata)
+    last_valuation_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payment_frequency: Optional[PaymentFrequency] = field(default=PaymentFrequency.Maturity, metadata=field_metadata)
+    global_cap: Optional[float] = field(default=1000000.0, metadata=field_metadata)
+    first_valuation_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    global_floor: Optional[float] = field(default=-1000000.0, metadata=field_metadata)
+    strike_price: Optional[float] = field(default=None, metadata=field_metadata)
+    return_type: Optional[ReturnType] = field(default=ReturnType.Sum, metadata=field_metadata)
+    valuation_period: Optional[str] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=0.0, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Cliquet, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqConvertibleBond(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    premium_settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    ref_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    quantity: Optional[float] = field(default=None, metadata=field_metadata)
+    isin: Optional[str] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Convertible, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class EqForward(Instrument):
-        
-    """Object representation of an equity forward"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        asset: str = None,
-        expiration_date: Union[datetime.date, str] = None,
-        forward_price: float = None,
-        number_of_shares: int = 1,
-        name: str = None
-    ):        
-        super().__init__()
-        self.asset = asset
-        self.expiration_date = expiration_date
-        self.forward_price = forward_price
-        self.number_of_shares = number_of_shares
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Equity"""
-        return AssetClass.Equity        
-
-    @property
-    def type(self) -> AssetType:
-        """Forward"""
-        return AssetType.Forward        
-
-    @property
-    def asset(self) -> str:
-        """Ticker of the underlying stock or index"""
-        return self.__asset
-
-    @asset.setter
-    def asset(self, value: str):
-        self._property_changed('asset')
-        self.__asset = value        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def forward_price(self) -> float:
-        """Forward price"""
-        return self.__forward_price
-
-    @forward_price.setter
-    def forward_price(self, value: float):
-        self._property_changed('forward_price')
-        self.__forward_price = value        
-
-    @property
-    def number_of_shares(self) -> int:
-        """Number of shares"""
-        return self.__number_of_shares
-
-    @number_of_shares.setter
-    def number_of_shares(self, value: int):
-        self._property_changed('number_of_shares')
-        self.__number_of_shares = value        
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    forward_price: Optional[float] = field(default=None, metadata=field_metadata)
+    number_of_shares: Optional[int] = field(default=1, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Forward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqForwardVarianceSwap(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    variance_cap: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    days_in_contract: Optional[float] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixing_schedule_dates: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    holiday_calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    initial_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    initial_spot: Optional[float] = field(default=None, metadata=field_metadata)
+    expiry_settlement_days: Optional[str] = field(default=None, metadata=field_metadata)
+    initial_spot_valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    force_forward_tradable: Optional[bool] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.ForwardVarianceSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqFuture(Instrument):
+    identifier: Optional[str] = field(default=None, metadata=field_metadata)
+    identifier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    underlier: Optional[str] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    quantity: Optional[float] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    traded_price: Optional[float] = field(default=0.0, metadata=field_metadata)
+    total_quantity: Optional[float] = field(default=None, metadata=field_metadata)
+    trade_as: Optional[str] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Future, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class EqOption(Instrument):
-        
-    """Instrument definition for equity option"""
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    option_style: Optional[OptionStyle] = field(default=None, metadata=field_metadata)
+    number_of_options: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    exchange: Optional[str] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=0.0, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    trade_as: Optional[TradeAs] = field(default=None, metadata=field_metadata)
+    future_contract: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Option, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @camel_case_translate
-    def __init__(
-        self,
-        asset: str = None,
-        expiration_date: Union[datetime.date, str] = None,
-        strike_price: Union[float, str] = None,
-        option_type: Union[OptionType, str] = None,
-        option_style: Union[OptionStyle, str] = None,
-        number_of_options: float = None,
-        exchange: str = None,
-        multiplier: float = None,
-        settlement_date: Union[datetime.date, str] = None,
-        currency: Union[Currency, str] = None,
-        premium: float = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.asset = asset
-        self.expiration_date = expiration_date
-        self.strike_price = strike_price
-        self.option_type = option_type
-        self.option_style = option_style
-        self.number_of_options = number_of_options
-        self.exchange = exchange
-        self.multiplier = multiplier
-        self.settlement_date = settlement_date
-        self.currency = currency
-        self.premium = premium
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Equity"""
-        return AssetClass.Equity        
-
-    @property
-    def type(self) -> AssetType:
-        """Option"""
-        return AssetType.Option        
-
-    @property
-    def asset(self) -> str:
-        """Ticker of the underlying stock or index"""
-        return self.__asset
-
-    @asset.setter
-    def asset(self, value: str):
-        self._property_changed('asset')
-        self.__asset = value        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def strike_price(self) -> Union[float, str]:
-        """Strike as value, percent or string e.g. 62.5, 95%, ATM, ATMF, 25ATM,
-           20CallDelta, 10PutDelta, 10NS"""
-        return self.__strike_price
-
-    @strike_price.setter
-    def strike_price(self, value: Union[float, str]):
-        self._property_changed('strike_price')
-        self.__strike_price = value        
-
-    @property
-    def option_type(self) -> Union[OptionType, str]:
-        """Option Type"""
-        return self.__option_type
-
-    @option_type.setter
-    def option_type(self, value: Union[OptionType, str]):
-        self._property_changed('option_type')
-        self.__option_type = get_enum_value(OptionType, value)        
-
-    @property
-    def option_style(self) -> Union[OptionStyle, str]:
-        """Option Exercise Style"""
-        return self.__option_style
-
-    @option_style.setter
-    def option_style(self, value: Union[OptionStyle, str]):
-        self._property_changed('option_style')
-        self.__option_style = get_enum_value(OptionStyle, value)        
-
-    @property
-    def number_of_options(self) -> float:
-        """Number of options"""
-        return self.__number_of_options
-
-    @number_of_options.setter
-    def number_of_options(self, value: float):
-        self._property_changed('number_of_options')
-        self.__number_of_options = value        
-
-    @property
-    def exchange(self) -> str:
-        """Name of marketplace where security, derivative or other instrument is traded"""
-        return self.__exchange
-
-    @exchange.setter
-    def exchange(self, value: str):
-        self._property_changed('exchange')
-        self.__exchange = value        
-
-    @property
-    def multiplier(self) -> float:
-        """Number of stock units per option contract"""
-        return self.__multiplier
-
-    @multiplier.setter
-    def multiplier(self, value: float):
-        self._property_changed('multiplier')
-        self.__multiplier = value        
-
-    @property
-    def settlement_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__settlement_date
-
-    @settlement_date.setter
-    def settlement_date(self, value: Union[datetime.date, str]):
-        self._property_changed('settlement_date')
-        self.__settlement_date = value        
-
-    @property
-    def currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__currency
-
-    @currency.setter
-    def currency(self, value: Union[Currency, str]):
-        self._property_changed('currency')
-        self.__currency = get_enum_value(Currency, value)        
-
-    @property
-    def premium(self) -> float:
-        """Option premium"""
-        return self.__premium
-
-    @premium.setter
-    def premium(self, value: float):
-        self._property_changed('premium')
-        self.__premium = value        
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {BuySell.Buy: BuySell.Sell, BuySell.Sell: BuySell.Buy}
+            self.buy_sell = flip_dict[self.buy_sell]
+            
+        self.number_of_options *= abs(scaling)
+        return
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqOptionLeg(Instrument):
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_style: Optional[OptionStyle] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    number_of_options: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    trade_as: Optional[TradeAs] = field(default=None, metadata=field_metadata)
+    exchange: Optional[str] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqStock(Instrument):
+    identifier: Optional[str] = field(default=None, metadata=field_metadata)
+    identifier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    traded_price: Optional[float] = field(default=0.0, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    quantity: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Single_Stock, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqSyntheticLeg(Instrument):
+    schedule_type: Optional[str] = field(default=None, metadata=field_metadata)
+    first_roll_date: Optional[str] = field(default=None, metadata=field_metadata)
+    first_roll_date_day_of_month: Optional[float] = field(default=None, metadata=field_metadata)
+    payment_schedule: Optional[Tuple[EqSyntheticSchedule, ...]] = field(default=None, metadata=field_metadata)
+    reset_schedule: Optional[Tuple[EqSyntheticSchedule, ...]] = field(default=None, metadata=field_metadata)
+    valuation_schedule: Optional[Tuple[EqSyntheticSchedule, ...]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SyntheticLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class EqVarianceSwap(Instrument):
-        
-    """Instrument definition for equity variance swap"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        asset: str = None,
-        expiration_date: Union[datetime.date, str] = None,
-        strike_price: Union[float, str] = None,
-        variance_cap: float = None,
-        settlement_date: Union[datetime.date, str] = None,
-        premium: float = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.asset = asset
-        self.expiration_date = expiration_date
-        self.strike_price = strike_price
-        self.variance_cap = variance_cap
-        self.settlement_date = settlement_date
-        self.premium = premium
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Equity"""
-        return AssetClass.Equity        
-
-    @property
-    def type(self) -> AssetType:
-        """VarianceSwap"""
-        return AssetType.VarianceSwap        
-
-    @property
-    def asset(self) -> str:
-        """Ticker of the underlying stock or index"""
-        return self.__asset
-
-    @asset.setter
-    def asset(self, value: str):
-        self._property_changed('asset')
-        self.__asset = value        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def strike_price(self) -> Union[float, str]:
-        """Variance strike as value or percentage string e.g. 62.5, 95%"""
-        return self.__strike_price
-
-    @strike_price.setter
-    def strike_price(self, value: Union[float, str]):
-        self._property_changed('strike_price')
-        self.__strike_price = value        
-
-    @property
-    def variance_cap(self) -> float:
-        """Variance Cap as absolute value"""
-        return self.__variance_cap
-
-    @variance_cap.setter
-    def variance_cap(self, value: float):
-        self._property_changed('variance_cap')
-        self.__variance_cap = value        
-
-    @property
-    def settlement_date(self) -> Union[datetime.date, str]:
-        """Settlement date"""
-        return self.__settlement_date
-
-    @settlement_date.setter
-    def settlement_date(self, value: Union[datetime.date, str]):
-        self._property_changed('settlement_date')
-        self.__settlement_date = value        
-
-    @property
-    def premium(self) -> float:
-        """VarSwap premium"""
-        return self.__premium
-
-    @premium.setter
-    def premium(self, value: float):
-        self._property_changed('premium')
-        self.__premium = value        
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    variance_cap: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    days_in_contract: Optional[float] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixing_schedule_dates: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    holiday_calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    initial_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    initial_spot: Optional[float] = field(default=None, metadata=field_metadata)
+    expiry_settlement_days: Optional[str] = field(default=None, metadata=field_metadata)
+    initial_spot_source_flag: Optional[float] = field(default=None, metadata=field_metadata)
+    force_forward_tradable: Optional[bool] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.VarianceSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqVolatilitySwap(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    variance_cap: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    days_in_contract: Optional[float] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixing_schedule_dates: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    holiday_calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    initial_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    initial_spot: Optional[float] = field(default=None, metadata=field_metadata)
+    expiry_settlement_days: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.VolatilitySwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXAccumulatorScheduleLeg(Instrument):
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    european_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knock_out_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.AccumulatorScheduleLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXBinary(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Binary, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXCorrelationSwap(Instrument):
+    legs: Tuple[FXCorrelationSwapLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    strike_corr: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    last_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    calculate_mean_return: Optional[float] = field(default=0.0, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=0, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CorrelationSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXDoubleKnockout(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    knock_in_or_out: Optional[InOut] = field(default=None, metadata=field_metadata)
+    lower_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.DoubleKnockout, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXDoubleOneTouch(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    lower_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payout_type: Optional[PayoutType] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    touch_or_no_touch: Optional[TouchNoTouch] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.DoubleTouch, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXDualDoubleKnockoutLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    lower_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.DualDoubleKnockoutLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXEuropeanKnockout(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[str] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knock_up_or_down: Optional[UpDown] = field(default=None, metadata=field_metadata)
+    knock_in_or_out: Optional[InOut] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.EuropeanKnockout, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class FXForward(Instrument):
-        
-    """Object representation of an FX forward"""
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    forward_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount_in_other_currency: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Forward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @camel_case_translate
-    def __init__(
-        self,
-        pair: str = None,
-        settlement_date: Union[datetime.date, str] = None,
-        forward_rate: float = None,
-        notional_amount: float = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.pair = pair
-        self.settlement_date = settlement_date
-        self.forward_rate = forward_rate
-        self.notional_amount = notional_amount
-        self.name = name
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {BuySell.Buy: BuySell.Sell, BuySell.Sell: BuySell.Buy}
+            self.buy_sell = flip_dict[self.buy_sell]
+            
+        self.notional_amount *= abs(scaling)
+        self.notional_amount_in_other_currency *= abs(scaling)
 
-    @property
-    def asset_class(self) -> AssetClass:
-        """FX"""
-        return AssetClass.FX        
-
-    @property
-    def type(self) -> AssetType:
-        """Forward"""
-        return AssetType.Forward        
-
-    @property
-    def pair(self) -> str:
-        """Currency pair"""
-        return self.__pair
-
-    @pair.setter
-    def pair(self, value: str):
-        self._property_changed('pair')
-        self.__pair = value        
-
-    @property
-    def settlement_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__settlement_date
-
-    @settlement_date.setter
-    def settlement_date(self, value: Union[datetime.date, str]):
-        self._property_changed('settlement_date')
-        self.__settlement_date = value        
-
-    @property
-    def forward_rate(self) -> float:
-        """Forward FX rate"""
-        return self.__forward_rate
-
-    @forward_rate.setter
-    def forward_rate(self, value: float):
-        self._property_changed('forward_rate')
-        self.__forward_rate = value        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
+        return
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXKnockout(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    knock_in_or_out: Optional[InOut] = field(default=None, metadata=field_metadata)
+    knock_up_or_down: Optional[UpDown] = field(default=None, metadata=field_metadata)
+    barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Knockout, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossBinaryLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossBinaryLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossDoubleBinaryLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    lower_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossDoubleBinaryLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossDoubleOneTouchLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    lower_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossDoubleTouchLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXOneTouch(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    knock_up_or_down: Optional[UpDown] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    touch_or_no_touch: Optional[TouchNoTouch] = field(default=None, metadata=field_metadata)
+    payout_type: Optional[PayoutType] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OneTouch, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class FXOption(Instrument):
-        
-    """Object representation of a FX option"""
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount_in_other_currency: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    exercise_style: Optional[OptionExerciseStyle] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Option, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @camel_case_translate
-    def __init__(
-        self,
-        call_currency: Union[Currency, str] = None,
-        put_currency: Union[Currency, str] = None,
-        expiration_date: Union[datetime.date, str] = None,
-        option_type: Union[OptionType, str] = None,
-        call_amount: float = None,
-        put_amount: float = None,
-        strike: Union[float, str] = None,
-        premium: float = 0,
-        name: str = None
-    ):        
-        super().__init__()
-        self.call_currency = call_currency
-        self.put_currency = put_currency
-        self.expiration_date = expiration_date
-        self.option_type = option_type
-        self.call_amount = call_amount
-        self.put_amount = put_amount
-        self.strike = strike
-        self.premium = premium
-        self.name = name
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {BuySell.Buy: BuySell.Sell, BuySell.Sell: BuySell.Buy}
+            self.buy_sell = flip_dict[self.buy_sell]
+            
+        self.notional_amount *= abs(scaling)
+        self.notional_amount_in_other_currency *= abs(scaling)
 
-    @property
-    def asset_class(self) -> AssetClass:
-        """FX"""
-        return AssetClass.FX        
-
-    @property
-    def type(self) -> AssetType:
-        """Option"""
-        return AssetType.Option        
-
-    @property
-    def call_currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__call_currency
-
-    @call_currency.setter
-    def call_currency(self, value: Union[Currency, str]):
-        self._property_changed('call_currency')
-        self.__call_currency = get_enum_value(Currency, value)        
-
-    @property
-    def put_currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__put_currency
-
-    @put_currency.setter
-    def put_currency(self, value: Union[Currency, str]):
-        self._property_changed('put_currency')
-        self.__put_currency = get_enum_value(Currency, value)        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def option_type(self) -> Union[OptionType, str]:
-        """Option Type"""
-        return self.__option_type
-
-    @option_type.setter
-    def option_type(self, value: Union[OptionType, str]):
-        self._property_changed('option_type')
-        self.__option_type = get_enum_value(OptionType, value)        
-
-    @property
-    def call_amount(self) -> float:
-        """Amount of the call currency"""
-        return self.__call_amount
-
-    @call_amount.setter
-    def call_amount(self, value: float):
-        self._property_changed('call_amount')
-        self.__call_amount = value        
-
-    @property
-    def put_amount(self) -> float:
-        """Amount of the put currency"""
-        return self.__put_amount
-
-    @put_amount.setter
-    def put_amount(self, value: float):
-        self._property_changed('put_amount')
-        self.__put_amount = value        
-
-    @property
-    def strike(self) -> Union[float, str]:
-        """Strike as value, percent or at-the-money e.g. 62.5, 95%, ATM-25, ATMF"""
-        return self.__strike
-
-    @strike.setter
-    def strike(self, value: Union[float, str]):
-        self._property_changed('strike')
-        self.__strike = value        
-
-    @property
-    def premium(self) -> float:
-        """Option premium"""
-        return self.__premium
-
-    @premium.setter
-    def premium(self, value: float):
-        self._property_changed('premium')
-        self.__premium = value        
+        return
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXOptionLeg(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount_in_other_currency: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    exercise_style: Optional[OptionExerciseStyle] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXPivotScheduleLeg(Instrument):
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    lower_leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    lower_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    lower_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    pivot: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.PivotScheduleLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXShiftingBermForward(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount_in_other_currency: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    window_start_date: Optional[str] = field(default=None, metadata=field_metadata)
+    exercise_decision_freq: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.ShiftingBermForward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXTarfScheduleLeg(Instrument):
+    profit_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    loss_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    european_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.TarfScheduleLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXVarianceSwap(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    strike_vol: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    last_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    annualization_factor: Optional[float] = field(default=None, metadata=field_metadata)
+    calculate_mean_return: Optional[float] = field(default=0.0, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=0, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.VarianceSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXVolatilitySwap(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    strike_vol: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    last_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    annualization_factor: Optional[float] = field(default=None, metadata=field_metadata)
+    calculate_mean_return: Optional[float] = field(default=0.0, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=0, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.VolatilitySwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXWorstOfKOLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    knock_up_or_down: Optional[UpDown] = field(default=None, metadata=field_metadata)
+    knock_in_or_out: Optional[InOut] = field(default=None, metadata=field_metadata)
+    barrier_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knockout_convention: Optional[KnockoutConvention] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.WorstOfKOLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXWorstOfLeg(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_scale_factor: Optional[float] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.WorstOfLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class Forward(Instrument):
-        
-    """Object representation of a forward"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        currency: Union[Currency, str] = None,
-        expiration_date: Union[datetime.date, str] = None,
-        notional_amount: float = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.currency = currency
-        self.expiration_date = expiration_date
-        self.notional_amount = notional_amount
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Cash"""
-        return AssetClass.Cash        
-
-    @property
-    def type(self) -> AssetType:
-        """Forward"""
-        return AssetType.Forward        
-
-    @property
-    def currency(self) -> Union[Currency, str]:
-        """Currency, ISO 4217 currency code or exchange quote modifier (e.g. GBP vs GBp)"""
-        return self.__currency
-
-    @currency.setter
-    def currency(self, value: Union[Currency, str]):
-        self._property_changed('currency')
-        self.__currency = get_enum_value(Currency, value)        
-
-    @property
-    def expiration_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[datetime.date, str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cash, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Forward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
-class IRBasisSwap(Instrument):
-        
-    """An exchange of cashflows from different interest rate indices"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        termination_date: Union[Union[datetime.date, str], str] = None,
-        notional_currency: Union[Currency, str] = None,
-        notional_amount: float = 1000000.0,
-        effective_date: Union[Union[datetime.date, str], str] = None,
-        payer_spread: float = None,
-        payer_rate_option: str = None,
-        payer_designated_maturity: str = None,
-        payer_frequency: str = None,
-        payer_day_count_fraction: Union[DayCountFraction, str] = None,
-        payer_business_day_convention: Union[BusinessDayConvention, str] = None,
-        receiver_spread: float = None,
-        receiver_rate_option: str = None,
-        receiver_designated_maturity: str = None,
-        receiver_frequency: str = None,
-        receiver_day_count_fraction: Union[DayCountFraction, str] = None,
-        receiver_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fee: float = 0,
-        clearing_house: Union[SwapClearingHouse, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.termination_date = termination_date
-        self.notional_currency = notional_currency
-        self.notional_amount = notional_amount
-        self.effective_date = effective_date
-        self.payer_spread = payer_spread
-        self.payer_rate_option = payer_rate_option
-        self.payer_designated_maturity = payer_designated_maturity
-        self.payer_frequency = payer_frequency
-        self.payer_day_count_fraction = payer_day_count_fraction
-        self.payer_business_day_convention = payer_business_day_convention
-        self.receiver_spread = receiver_spread
-        self.receiver_rate_option = receiver_rate_option
-        self.receiver_designated_maturity = receiver_designated_maturity
-        self.receiver_frequency = receiver_frequency
-        self.receiver_day_count_fraction = receiver_day_count_fraction
-        self.receiver_business_day_convention = receiver_business_day_convention
-        self.fee = fee
-        self.clearing_house = clearing_house
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
-
-    @property
-    def type(self) -> AssetType:
-        """BasisSwap"""
-        return AssetType.BasisSwap        
-
-    @property
-    def termination_date(self) -> Union[Union[datetime.date, str], str]:
-        """The termination of the swap, e.g. 2050-04-01, 10y"""
-        return self.__termination_date
-
-    @termination_date.setter
-    def termination_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def effective_date(self) -> Union[Union[datetime.date, str], str]:
-        """The date on which the swap becomes effective"""
-        return self.__effective_date
-
-    @effective_date.setter
-    def effective_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
-
-    @property
-    def payer_spread(self) -> float:
-        """Spread over the payer rate"""
-        return self.__payer_spread
-
-    @payer_spread.setter
-    def payer_spread(self, value: float):
-        self._property_changed('payer_spread')
-        self.__payer_spread = value        
-
-    @property
-    def payer_rate_option(self) -> str:
-        """The underlying benchmark for the payer, e.g. USD-LIBOR-BBA, EUR-EURIBOR-TELERATE"""
-        return self.__payer_rate_option
-
-    @payer_rate_option.setter
-    def payer_rate_option(self, value: str):
-        self._property_changed('payer_rate_option')
-        self.__payer_rate_option = value        
-
-    @property
-    def payer_designated_maturity(self) -> str:
-        """Tenor of the payerRateOption, e.g. 3m, 6m"""
-        return self.__payer_designated_maturity
-
-    @payer_designated_maturity.setter
-    def payer_designated_maturity(self, value: str):
-        self._property_changed('payer_designated_maturity')
-        self.__payer_designated_maturity = value        
-
-    @property
-    def payer_frequency(self) -> str:
-        """The frequency of payer payments, e.g. 6m"""
-        return self.__payer_frequency
-
-    @payer_frequency.setter
-    def payer_frequency(self, value: str):
-        self._property_changed('payer_frequency')
-        self.__payer_frequency = value        
-
-    @property
-    def payer_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction for the payer"""
-        return self.__payer_day_count_fraction
-
-    @payer_day_count_fraction.setter
-    def payer_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('payer_day_count_fraction')
-        self.__payer_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def payer_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention for the payer"""
-        return self.__payer_business_day_convention
-
-    @payer_business_day_convention.setter
-    def payer_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('payer_business_day_convention')
-        self.__payer_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def receiver_spread(self) -> float:
-        """Spread over the receiver rate"""
-        return self.__receiver_spread
-
-    @receiver_spread.setter
-    def receiver_spread(self, value: float):
-        self._property_changed('receiver_spread')
-        self.__receiver_spread = value        
-
-    @property
-    def receiver_rate_option(self) -> str:
-        """The underlying benchmark for the receiver, e.g. USD-LIBOR-BBA, EUR-EURIBOR-
-           TELERATE"""
-        return self.__receiver_rate_option
-
-    @receiver_rate_option.setter
-    def receiver_rate_option(self, value: str):
-        self._property_changed('receiver_rate_option')
-        self.__receiver_rate_option = value        
-
-    @property
-    def receiver_designated_maturity(self) -> str:
-        """Tenor of the receiverRateOption, e.g. 3m, 6m"""
-        return self.__receiver_designated_maturity
-
-    @receiver_designated_maturity.setter
-    def receiver_designated_maturity(self, value: str):
-        self._property_changed('receiver_designated_maturity')
-        self.__receiver_designated_maturity = value        
-
-    @property
-    def receiver_frequency(self) -> str:
-        """The frequency of receiver payments, e.g. 6m"""
-        return self.__receiver_frequency
-
-    @receiver_frequency.setter
-    def receiver_frequency(self, value: str):
-        self._property_changed('receiver_frequency')
-        self.__receiver_frequency = value        
-
-    @property
-    def receiver_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction for the receiver"""
-        return self.__receiver_day_count_fraction
-
-    @receiver_day_count_fraction.setter
-    def receiver_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('receiver_day_count_fraction')
-        self.__receiver_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def receiver_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention for the receiver"""
-        return self.__receiver_business_day_convention
-
-    @receiver_business_day_convention.setter
-    def receiver_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('receiver_business_day_convention')
-        self.__receiver_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
-
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
-
-    @property
-    def clearing_house(self) -> Union[SwapClearingHouse, str]:
-        """Swap Clearing House"""
-        return self.__clearing_house
-
-    @clearing_house.setter
-    def clearing_house(self, value: Union[SwapClearingHouse, str]):
-        self._property_changed('clearing_house')
-        self.__clearing_house = get_enum_value(SwapClearingHouse, value)        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRBondFuture(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    exchange: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.BondFuture, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class IRCap(Instrument):
-        
-    """Object representation of an interest rate cap"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        termination_date: Union[datetime.date, str] = None,
-        notional_currency: Union[Currency, str] = None,
-        notional_amount: float = 1000000.0,
-        effective_date: Union[datetime.date, str] = None,
-        floating_rate_option: str = None,
-        floating_rate_designated_maturity: str = None,
-        floating_rate_frequency: str = None,
-        floating_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        floating_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        cap_rate: Union[float, str] = None,
-        premium: float = 0,
-        fee: float = 0,
-        premium_payment_date: Union[datetime.date, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.termination_date = termination_date
-        self.notional_currency = notional_currency
-        self.notional_amount = notional_amount
-        self.effective_date = effective_date
-        self.floating_rate_option = floating_rate_option
-        self.floating_rate_designated_maturity = floating_rate_designated_maturity
-        self.floating_rate_frequency = floating_rate_frequency
-        self.floating_rate_day_count_fraction = floating_rate_day_count_fraction
-        self.floating_rate_business_day_convention = floating_rate_business_day_convention
-        self.cap_rate = cap_rate
-        self.premium = premium
-        self.fee = fee
-        self.premium_payment_date = premium_payment_date
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
-
-    @property
-    def type(self) -> AssetType:
-        """Cap"""
-        return AssetType.Cap        
-
-    @property
-    def termination_date(self) -> Union[datetime.date, str]:
-        """The termination of the cap, e.g. 2025-04-01, 2y"""
-        return self.__termination_date
-
-    @termination_date.setter
-    def termination_date(self, value: Union[datetime.date, str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def effective_date(self) -> Union[datetime.date, str]:
-        """The date on which the cap becomes effective"""
-        return self.__effective_date
-
-    @effective_date.setter
-    def effective_date(self, value: Union[datetime.date, str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
-
-    @property
-    def floating_rate_option(self) -> str:
-        """The underlying benchmark for the floating rate, e.g. USD-LIBOR-BBA, EUR-EURIBOR-
-           TELERATE"""
-        return self.__floating_rate_option
-
-    @floating_rate_option.setter
-    def floating_rate_option(self, value: str):
-        self._property_changed('floating_rate_option')
-        self.__floating_rate_option = value        
-
-    @property
-    def floating_rate_designated_maturity(self) -> str:
-        """Tenor of the floatingRateOption, e.g. 3m, 6m"""
-        return self.__floating_rate_designated_maturity
-
-    @floating_rate_designated_maturity.setter
-    def floating_rate_designated_maturity(self, value: str):
-        self._property_changed('floating_rate_designated_maturity')
-        self.__floating_rate_designated_maturity = value        
-
-    @property
-    def floating_rate_frequency(self) -> str:
-        """The frequency of floating payments, e.g. 3m"""
-        return self.__floating_rate_frequency
-
-    @floating_rate_frequency.setter
-    def floating_rate_frequency(self, value: str):
-        self._property_changed('floating_rate_frequency')
-        self.__floating_rate_frequency = value        
-
-    @property
-    def floating_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction of the floating rate"""
-        return self.__floating_rate_day_count_fraction
-
-    @floating_rate_day_count_fraction.setter
-    def floating_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('floating_rate_day_count_fraction')
-        self.__floating_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def floating_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention of the floating rate"""
-        return self.__floating_rate_business_day_convention
-
-    @floating_rate_business_day_convention.setter
-    def floating_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('floating_rate_business_day_convention')
-        self.__floating_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def cap_rate(self) -> Union[float, str]:
-        """The rate of this cap, as value, percent or at-the-money e.g. 62.5, 95%, ATM-25,
-           ATMF"""
-        return self.__cap_rate
-
-    @cap_rate.setter
-    def cap_rate(self, value: Union[float, str]):
-        self._property_changed('cap_rate')
-        self.__cap_rate = value        
-
-    @property
-    def premium(self) -> float:
-        """The premium"""
-        return self.__premium
-
-    @premium.setter
-    def premium(self, value: float):
-        self._property_changed('premium')
-        self.__premium = value        
-
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
-
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
-
-    @property
-    def premium_payment_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__premium_payment_date
-
-    @premium_payment_date.setter
-    def premium_payment_date(self, value: Union[datetime.date, str]):
-        self._property_changed('premium_payment_date')
-        self.__premium_payment_date = value        
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    cap_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Cap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class IRFloor(Instrument):
-        
-    """Object representation of an interest rate floor"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        termination_date: Union[datetime.date, str] = None,
-        notional_currency: Union[Currency, str] = None,
-        notional_amount: float = 1000000.0,
-        effective_date: Union[datetime.date, str] = None,
-        floating_rate_option: str = None,
-        floating_rate_designated_maturity: str = None,
-        floating_rate_frequency: str = None,
-        floating_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        floating_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        floor_rate: Union[float, str] = None,
-        fee: float = 0,
-        premium_payment_date: Union[datetime.date, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.termination_date = termination_date
-        self.notional_currency = notional_currency
-        self.notional_amount = notional_amount
-        self.effective_date = effective_date
-        self.floating_rate_option = floating_rate_option
-        self.floating_rate_designated_maturity = floating_rate_designated_maturity
-        self.floating_rate_frequency = floating_rate_frequency
-        self.floating_rate_day_count_fraction = floating_rate_day_count_fraction
-        self.floating_rate_business_day_convention = floating_rate_business_day_convention
-        self.floor_rate = floor_rate
-        self.fee = fee
-        self.premium_payment_date = premium_payment_date
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
-
-    @property
-    def type(self) -> AssetType:
-        """Floor"""
-        return AssetType.Floor        
-
-    @property
-    def termination_date(self) -> Union[datetime.date, str]:
-        """The termination of the floor, e.g. 2025-04-01, 2y"""
-        return self.__termination_date
-
-    @termination_date.setter
-    def termination_date(self, value: Union[datetime.date, str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def effective_date(self) -> Union[datetime.date, str]:
-        """The date on which the floor becomes effective"""
-        return self.__effective_date
-
-    @effective_date.setter
-    def effective_date(self, value: Union[datetime.date, str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
-
-    @property
-    def floating_rate_option(self) -> str:
-        """The underlying benchmark for the floating rate, e.g. USD-LIBOR-BBA, EUR-EURIBOR-
-           TELERATE"""
-        return self.__floating_rate_option
-
-    @floating_rate_option.setter
-    def floating_rate_option(self, value: str):
-        self._property_changed('floating_rate_option')
-        self.__floating_rate_option = value        
-
-    @property
-    def floating_rate_designated_maturity(self) -> str:
-        """Tenor of the floatingRateOption, e.g. 3m, 6m"""
-        return self.__floating_rate_designated_maturity
-
-    @floating_rate_designated_maturity.setter
-    def floating_rate_designated_maturity(self, value: str):
-        self._property_changed('floating_rate_designated_maturity')
-        self.__floating_rate_designated_maturity = value        
-
-    @property
-    def floating_rate_frequency(self) -> str:
-        """The frequency of floating payments, e.g. 3m"""
-        return self.__floating_rate_frequency
-
-    @floating_rate_frequency.setter
-    def floating_rate_frequency(self, value: str):
-        self._property_changed('floating_rate_frequency')
-        self.__floating_rate_frequency = value        
-
-    @property
-    def floating_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction of the floating rate"""
-        return self.__floating_rate_day_count_fraction
-
-    @floating_rate_day_count_fraction.setter
-    def floating_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('floating_rate_day_count_fraction')
-        self.__floating_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def floating_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention of the floating rate"""
-        return self.__floating_rate_business_day_convention
-
-    @floating_rate_business_day_convention.setter
-    def floating_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('floating_rate_business_day_convention')
-        self.__floating_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def floor_rate(self) -> Union[float, str]:
-        """The rate of this floor, as value, percent or at-the-money e.g. 62.5, 95%,
-           ATM-25, ATMF"""
-        return self.__floor_rate
-
-    @floor_rate.setter
-    def floor_rate(self, value: Union[float, str]):
-        self._property_changed('floor_rate')
-        self.__floor_rate = value        
-
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
-
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
-
-    @property
-    def premium_payment_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__premium_payment_date
-
-    @premium_payment_date.setter
-    def premium_payment_date(self, value: Union[datetime.date, str]):
-        self._property_changed('premium_payment_date')
-        self.__premium_payment_date = value        
-
-
-class IRSwap(Instrument):
-        
-    """A vanilla interest rate swap of fixed vs floating cashflows"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        pay_or_receive: Union[PayReceive, str] = None,
-        termination_date: Union[Union[datetime.date, str], str] = None,
-        notional_currency: Union[Currency, str] = None,
-        notional_amount: float = 1000000.0,
-        effective_date: Union[Union[datetime.date, str], str] = None,
-        floating_rate_for_the_initial_calculation_period: float = None,
-        floating_rate_option: str = None,
-        floating_rate_designated_maturity: str = None,
-        floating_rate_spread: float = None,
-        floating_rate_frequency: str = None,
-        floating_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        floating_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fixed_rate: Union[float, str] = None,
-        fixed_rate_frequency: str = None,
-        fixed_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        fixed_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fee: float = 0,
-        clearing_house: Union[SwapClearingHouse, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.pay_or_receive = pay_or_receive
-        self.termination_date = termination_date
-        self.notional_currency = notional_currency
-        self.notional_amount = notional_amount
-        self.effective_date = effective_date
-        self.floating_rate_for_the_initial_calculation_period = floating_rate_for_the_initial_calculation_period
-        self.floating_rate_option = floating_rate_option
-        self.floating_rate_designated_maturity = floating_rate_designated_maturity
-        self.floating_rate_spread = floating_rate_spread
-        self.floating_rate_frequency = floating_rate_frequency
-        self.floating_rate_day_count_fraction = floating_rate_day_count_fraction
-        self.floating_rate_business_day_convention = floating_rate_business_day_convention
-        self.fixed_rate = fixed_rate
-        self.fixed_rate_frequency = fixed_rate_frequency
-        self.fixed_rate_day_count_fraction = fixed_rate_day_count_fraction
-        self.fixed_rate_business_day_convention = fixed_rate_business_day_convention
-        self.fee = fee
-        self.clearing_house = clearing_house
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
-
-    @property
-    def type(self) -> AssetType:
-        """Swap"""
-        return AssetType.Swap        
-
-    @property
-    def pay_or_receive(self) -> Union[PayReceive, str]:
-        """Pay or receive fixed"""
-        return self.__pay_or_receive
-
-    @pay_or_receive.setter
-    def pay_or_receive(self, value: Union[PayReceive, str]):
-        self._property_changed('pay_or_receive')
-        self.__pay_or_receive = get_enum_value(PayReceive, value)        
-
-    @property
-    def termination_date(self) -> Union[Union[datetime.date, str], str]:
-        """The termination of the swap, e.g. 2050-04-01, 10y"""
-        return self.__termination_date
-
-    @termination_date.setter
-    def termination_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def effective_date(self) -> Union[Union[datetime.date, str], str]:
-        """The date on which the swap becomes effective"""
-        return self.__effective_date
-
-    @effective_date.setter
-    def effective_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
-
-    @property
-    def floating_rate_for_the_initial_calculation_period(self) -> float:
-        """First fixing"""
-        return self.__floating_rate_for_the_initial_calculation_period
-
-    @floating_rate_for_the_initial_calculation_period.setter
-    def floating_rate_for_the_initial_calculation_period(self, value: float):
-        self._property_changed('floating_rate_for_the_initial_calculation_period')
-        self.__floating_rate_for_the_initial_calculation_period = value        
-
-    @property
-    def floating_rate_option(self) -> str:
-        """The underlying benchmark for the floating rate, e.g. USD-LIBOR-BBA, EUR-EURIBOR-
-           TELERATE"""
-        return self.__floating_rate_option
-
-    @floating_rate_option.setter
-    def floating_rate_option(self, value: str):
-        self._property_changed('floating_rate_option')
-        self.__floating_rate_option = value        
-
-    @property
-    def floating_rate_designated_maturity(self) -> str:
-        """Tenor of the floatingRateOption, e.g. 3m, 6m"""
-        return self.__floating_rate_designated_maturity
-
-    @floating_rate_designated_maturity.setter
-    def floating_rate_designated_maturity(self, value: str):
-        self._property_changed('floating_rate_designated_maturity')
-        self.__floating_rate_designated_maturity = value        
-
-    @property
-    def floating_rate_spread(self) -> float:
-        """The spread over the floating rate"""
-        return self.__floating_rate_spread
-
-    @floating_rate_spread.setter
-    def floating_rate_spread(self, value: float):
-        self._property_changed('floating_rate_spread')
-        self.__floating_rate_spread = value        
-
-    @property
-    def floating_rate_frequency(self) -> str:
-        """The frequency of floating payments, e.g. 3m"""
-        return self.__floating_rate_frequency
-
-    @floating_rate_frequency.setter
-    def floating_rate_frequency(self, value: str):
-        self._property_changed('floating_rate_frequency')
-        self.__floating_rate_frequency = value        
-
-    @property
-    def floating_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction of the floating rate"""
-        return self.__floating_rate_day_count_fraction
-
-    @floating_rate_day_count_fraction.setter
-    def floating_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('floating_rate_day_count_fraction')
-        self.__floating_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def floating_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention of the floating rate"""
-        return self.__floating_rate_business_day_convention
-
-    @floating_rate_business_day_convention.setter
-    def floating_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('floating_rate_business_day_convention')
-        self.__floating_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def fixed_rate(self) -> Union[float, str]:
-        """The coupon of the fixed leg"""
-        return self.__fixed_rate
-
-    @fixed_rate.setter
-    def fixed_rate(self, value: Union[float, str]):
-        self._property_changed('fixed_rate')
-        self.__fixed_rate = value        
-
-    @property
-    def fixed_rate_frequency(self) -> str:
-        """The frequency of fixed payments, e.g. 6m"""
-        return self.__fixed_rate_frequency
-
-    @fixed_rate_frequency.setter
-    def fixed_rate_frequency(self, value: str):
-        self._property_changed('fixed_rate_frequency')
-        self.__fixed_rate_frequency = value        
-
-    @property
-    def fixed_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction for the fixed rate"""
-        return self.__fixed_rate_day_count_fraction
-
-    @fixed_rate_day_count_fraction.setter
-    def fixed_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('fixed_rate_day_count_fraction')
-        self.__fixed_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def fixed_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention for the fixed rate"""
-        return self.__fixed_rate_business_day_convention
-
-    @fixed_rate_business_day_convention.setter
-    def fixed_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('fixed_rate_business_day_convention')
-        self.__fixed_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
-
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
-
-    @property
-    def clearing_house(self) -> Union[SwapClearingHouse, str]:
-        """Swap Clearing House"""
-        return self.__clearing_house
-
-    @clearing_house.setter
-    def clearing_house(self, value: Union[SwapClearingHouse, str]):
-        self._property_changed('clearing_house')
-        self.__clearing_house = get_enum_value(SwapClearingHouse, value)        
-
-
-class IRSwaption(Instrument):
-        
-    """Object representation of a swaption"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        pay_or_receive: str = None,
-        termination_date: Union[Union[datetime.date, str], str] = None,
-        notional_currency: Union[Currency, str] = None,
-        effective_date: Union[Union[datetime.date, str], str] = None,
-        notional_amount: float = 1000000.0,
-        expiration_date: Union[Union[datetime.date, str], str] = None,
-        floating_rate_option: str = None,
-        floating_rate_designated_maturity: str = None,
-        floating_rate_spread: float = None,
-        floating_rate_frequency: str = None,
-        floating_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        floating_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fixed_rate_frequency: str = None,
-        fixed_rate_day_count_fraction: Union[DayCountFraction, str] = None,
-        fixed_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        strike: Union[float, str] = None,
-        premium: float = 0,
-        fee: float = 0,
-        clearing_house: Union[SwapClearingHouse, str] = None,
-        settlement: Union[SwapSettlement, str] = None,
-        premium_payment_date: Union[datetime.date, str] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.pay_or_receive = pay_or_receive
-        self.termination_date = termination_date
-        self.notional_currency = notional_currency
-        self.effective_date = effective_date
-        self.notional_amount = notional_amount
-        self.expiration_date = expiration_date
-        self.floating_rate_option = floating_rate_option
-        self.floating_rate_designated_maturity = floating_rate_designated_maturity
-        self.floating_rate_spread = floating_rate_spread
-        self.floating_rate_frequency = floating_rate_frequency
-        self.floating_rate_day_count_fraction = floating_rate_day_count_fraction
-        self.floating_rate_business_day_convention = floating_rate_business_day_convention
-        self.fixed_rate_frequency = fixed_rate_frequency
-        self.fixed_rate_day_count_fraction = fixed_rate_day_count_fraction
-        self.fixed_rate_business_day_convention = fixed_rate_business_day_convention
-        self.strike = strike
-        self.premium = premium
-        self.fee = fee
-        self.clearing_house = clearing_house
-        self.settlement = settlement
-        self.premium_payment_date = premium_payment_date
-        self.name = name
-
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
-
-    @property
-    def type(self) -> AssetType:
-        """Swaption"""
-        return AssetType.Swaption        
-
-    @property
-    def pay_or_receive(self) -> str:
-        """Pay or receive fixed"""
-        return self.__pay_or_receive
-
-    @pay_or_receive.setter
-    def pay_or_receive(self, value: str):
-        self._property_changed('pay_or_receive')
-        self.__pay_or_receive = value        
-
-    @property
-    def termination_date(self) -> Union[Union[datetime.date, str], str]:
-        """Swaption termination date, e.g. 2030-05-01, 10y"""
-        return self.__termination_date
-
-    @termination_date.setter
-    def termination_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
-
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
-
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
-
-    @property
-    def effective_date(self) -> Union[Union[datetime.date, str], str]:
-        """Swaption effective date, e.g. 2019-01-01, 10y"""
-        return self.__effective_date
-
-    @effective_date.setter
-    def effective_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
-
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
-
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
-
-    @property
-    def expiration_date(self) -> Union[Union[datetime.date, str], str]:
-        """Swaption expiration date, 2020-05-01, 3m"""
-        return self.__expiration_date
-
-    @expiration_date.setter
-    def expiration_date(self, value: Union[Union[datetime.date, str], str]):
-        self._property_changed('expiration_date')
-        self.__expiration_date = value        
-
-    @property
-    def floating_rate_option(self) -> str:
-        """The underlying benchmark for the floating rate, e.g. USD-LIBOR-BBA, EUR-EURIBOR-
-           TELERATE"""
-        return self.__floating_rate_option
-
-    @floating_rate_option.setter
-    def floating_rate_option(self, value: str):
-        self._property_changed('floating_rate_option')
-        self.__floating_rate_option = value        
-
-    @property
-    def floating_rate_designated_maturity(self) -> str:
-        """Tenor"""
-        return self.__floating_rate_designated_maturity
-
-    @floating_rate_designated_maturity.setter
-    def floating_rate_designated_maturity(self, value: str):
-        self._property_changed('floating_rate_designated_maturity')
-        self.__floating_rate_designated_maturity = value        
-
-    @property
-    def floating_rate_spread(self) -> float:
-        """The spread over the floating rate"""
-        return self.__floating_rate_spread
-
-    @floating_rate_spread.setter
-    def floating_rate_spread(self, value: float):
-        self._property_changed('floating_rate_spread')
-        self.__floating_rate_spread = value        
-
-    @property
-    def floating_rate_frequency(self) -> str:
-        """The frequency of floating payments, e.g. 3m"""
-        return self.__floating_rate_frequency
-
-    @floating_rate_frequency.setter
-    def floating_rate_frequency(self, value: str):
-        self._property_changed('floating_rate_frequency')
-        self.__floating_rate_frequency = value        
-
-    @property
-    def floating_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction of the floating rate"""
-        return self.__floating_rate_day_count_fraction
-
-    @floating_rate_day_count_fraction.setter
-    def floating_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('floating_rate_day_count_fraction')
-        self.__floating_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def floating_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention of the floating rate"""
-        return self.__floating_rate_business_day_convention
-
-    @floating_rate_business_day_convention.setter
-    def floating_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('floating_rate_business_day_convention')
-        self.__floating_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def fixed_rate_frequency(self) -> str:
-        """The frequency of fixed payments, e.g. 6m"""
-        return self.__fixed_rate_frequency
-
-    @fixed_rate_frequency.setter
-    def fixed_rate_frequency(self, value: str):
-        self._property_changed('fixed_rate_frequency')
-        self.__fixed_rate_frequency = value        
-
-    @property
-    def fixed_rate_day_count_fraction(self) -> Union[DayCountFraction, str]:
-        """The day count fraction for the fixed rate"""
-        return self.__fixed_rate_day_count_fraction
-
-    @fixed_rate_day_count_fraction.setter
-    def fixed_rate_day_count_fraction(self, value: Union[DayCountFraction, str]):
-        self._property_changed('fixed_rate_day_count_fraction')
-        self.__fixed_rate_day_count_fraction = get_enum_value(DayCountFraction, value)        
-
-    @property
-    def fixed_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention for the fixed rate"""
-        return self.__fixed_rate_business_day_convention
-
-    @fixed_rate_business_day_convention.setter
-    def fixed_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('fixed_rate_business_day_convention')
-        self.__fixed_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
-
-    @property
-    def strike(self) -> Union[float, str]:
-        """Strike as value, percent or at-the-money e.g. 62.5, 95%, ATM-25, ATMF"""
-        return self.__strike
-
-    @strike.setter
-    def strike(self, value: Union[float, str]):
-        self._property_changed('strike')
-        self.__strike = value        
-
-    @property
-    def premium(self) -> float:
-        """The premium"""
-        return self.__premium
-
-    @premium.setter
-    def premium(self, value: float):
-        self._property_changed('premium')
-        self.__premium = value        
-
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
-
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
-
-    @property
-    def clearing_house(self) -> Union[SwapClearingHouse, str]:
-        """Swap Clearing House"""
-        return self.__clearing_house
-
-    @clearing_house.setter
-    def clearing_house(self, value: Union[SwapClearingHouse, str]):
-        self._property_changed('clearing_house')
-        self.__clearing_house = get_enum_value(SwapClearingHouse, value)        
-
-    @property
-    def settlement(self) -> Union[SwapSettlement, str]:
-        """Swap Settlement Type"""
-        return self.__settlement
-
-    @settlement.setter
-    def settlement(self, value: Union[SwapSettlement, str]):
-        self._property_changed('settlement')
-        self.__settlement = get_enum_value(SwapSettlement, value)        
-
-    @property
-    def premium_payment_date(self) -> Union[datetime.date, str]:
-        """Date or tenor, e.g. 2018-09-03, 3m"""
-        return self.__premium_payment_date
-
-    @premium_payment_date.setter
-    def premium_payment_date(self, value: Union[datetime.date, str]):
-        self._property_changed('premium_payment_date')
-        self.__premium_payment_date = value        
-
-
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    floor_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Floor, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class InflationSwap(Instrument):
-        
-    """A vanilla inflation swap of fixed vs floating cashflows adjusted to an inflation
-       rate"""
+    pay_or_receive: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    base_cpi: Optional[float] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.InflationSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @camel_case_translate
-    def __init__(
-        self,
-        termination_date: Union[datetime.date, str] = None,
-        pay_or_receive: Union[PayReceive, str] = None,
-        notional_currency: Union[Currency, str] = None,
-        notional_amount: float = 1000000.0,
-        effective_date: Union[datetime.date, str] = None,
-        index: str = None,
-        floating_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fixed_rate: Union[float, str] = None,
-        fixed_rate_business_day_convention: Union[BusinessDayConvention, str] = None,
-        fee: float = 0,
-        name: str = None
-    ):        
-        super().__init__()
-        self.termination_date = termination_date
-        self.pay_or_receive = pay_or_receive
-        self.notional_currency = notional_currency
-        self.notional_amount = notional_amount
-        self.effective_date = effective_date
-        self.index = index
-        self.floating_rate_business_day_convention = floating_rate_business_day_convention
-        self.fixed_rate = fixed_rate
-        self.fixed_rate_business_day_convention = fixed_rate_business_day_convention
-        self.fee = fee
-        self.name = name
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {PayReceive.Pay: PayReceive.Receive, PayReceive.Receive: PayReceive.Pay}
+            self.pay_or_receive = flip_dict[self.pay_or_receive]
+            self.fee *= -1
+        self.notional_amount *= abs(scaling)
+        return
 
-    @property
-    def asset_class(self) -> AssetClass:
-        """Rates"""
-        return AssetClass.Rates        
 
-    @property
-    def type(self) -> AssetType:
-        """InflationSwap"""
-        return AssetType.InflationSwap        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class InstrumentsRepoIRDiscreteLock(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    spot_clean_price: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    repo_rate: Optional[float] = field(default=None, metadata=field_metadata)
+    forward_clean_price: Optional[float] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Repo, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Bond_Forward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def termination_date(self) -> Union[datetime.date, str]:
-        """The termination of the swap, e.g. 2050-04-01, 10y"""
-        return self.__termination_date
 
-    @termination_date.setter
-    def termination_date(self, value: Union[datetime.date, str]):
-        self._property_changed('termination_date')
-        self.__termination_date = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class MetalForward(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    delivery_location: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Forward, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def pay_or_receive(self) -> Union[PayReceive, str]:
-        """Pay or receive fixed"""
-        return self.__pay_or_receive
 
-    @pay_or_receive.setter
-    def pay_or_receive(self, value: Union[PayReceive, str]):
-        self._property_changed('pay_or_receive')
-        self.__pay_or_receive = get_enum_value(PayReceive, value)        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CDIndex(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    clearinghouse: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    first_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    first_roll_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    index_family: Optional[str] = field(default=None, metadata=field_metadata)
+    index_for_basis: Optional[str] = field(default=None, metadata=field_metadata)
+    index_series: Optional[float] = field(default=None, metadata=field_metadata)
+    index_version: Optional[float] = field(default=None, metadata=field_metadata)
+    isda_docs: Optional[str] = field(default='2014', metadata=config(field_name='ISDADocs', exclude=exclude_none))
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Credit, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Index, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def notional_currency(self) -> Union[Currency, str]:
-        """Notional currency"""
-        return self.__notional_currency
 
-    @notional_currency.setter
-    def notional_currency(self, value: Union[Currency, str]):
-        self._property_changed('notional_currency')
-        self.__notional_currency = get_enum_value(Currency, value)        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CDIndexOption(Instrument):
+    automatic_exercise: Optional[float] = field(default=0.0, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    clearinghouse: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    earliest_exercise_time: Optional[str] = field(default=None, metadata=field_metadata)
+    earliest_exercise_time_centre: Optional[str] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    exercise_date_business_day_convention: Optional[BusinessDayConvention] = field(default='Following', metadata=field_metadata)
+    exercise_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    expiration_time_centre: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=0.0, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    first_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    first_roll_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    index_family: Optional[str] = field(default=None, metadata=field_metadata)
+    index_for_basis: Optional[str] = field(default=None, metadata=field_metadata)
+    index_series: Optional[float] = field(default=None, metadata=field_metadata)
+    index_version: Optional[float] = field(default=None, metadata=field_metadata)
+    isda_docs: Optional[str] = field(default='2014', metadata=config(field_name='ISDADocs', exclude=exclude_none))
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[CDOptionType] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[float] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_type: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Credit, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.IndexOption, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def notional_amount(self) -> float:
-        """Notional amount"""
-        return self.__notional_amount
 
-    @notional_amount.setter
-    def notional_amount(self, value: float):
-        self._property_changed('notional_amount')
-        self.__notional_amount = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCOptionLeg(Instrument):
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    fixing_currency: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    premium: Optional[CommodPrice] = field(default=None, metadata=field_metadata)
+    leg_description: Optional[str] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency_source: Optional[str] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier: Optional[str] = field(default=None, metadata=field_metadata)
+    premium_settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity_multiplier: Optional[int] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def effective_date(self) -> Union[datetime.date, str]:
-        """The date on which the swap becomes effective"""
-        return self.__effective_date
 
-    @effective_date.setter
-    def effective_date(self, value: Union[datetime.date, str]):
-        self._property_changed('effective_date')
-        self.__effective_date = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCSwap(Instrument):
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    legs: Optional[Tuple[CommodOTCSwapLeg, ...]] = field(default=None, metadata=field_metadata)
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    number_of_periods: Optional[int] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity_period: Optional[Period] = field(default=None, metadata=field_metadata)
+    strategy: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.SwapStrategy, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def index(self) -> str:
-        """The underlying benchmark for the floating rate, e.g. CPI-U"""
-        return self.__index
 
-    @index.setter
-    def index(self, value: str):
-        self._property_changed('index')
-        self.__index = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOption(Instrument):
+    commodity: Optional[str] = field(default=None, metadata=field_metadata)
+    number_of_periods: Optional[int] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    currency_summary: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    option_types: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[str] = field(default=None, metadata=field_metadata)
+    strike_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    strikes: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sells: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    underlier_short_name: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_days_type: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days_from: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    strike_currency: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency_source: Optional[str] = field(default=None, metadata=field_metadata)
+    strike: Optional[str] = field(default=None, metadata=field_metadata)
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_type: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency: Optional[str] = field(default=None, metadata=field_metadata)
+    commodity_reference_price: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity_period: Optional[str] = field(default=None, metadata=field_metadata)
+    strategy: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[str] = field(default=None, metadata=field_metadata)
+    premium_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    premium_type: Optional[str] = field(default=None, metadata=field_metadata)
+    period_details: Optional[Tuple[CommodOTCOptionPeriod, ...]] = field(default=None, metadata=field_metadata)
+    native_quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Option, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def floating_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention of the floating rate"""
-        return self.__floating_rate_business_day_convention
 
-    @floating_rate_business_day_convention.setter
-    def floating_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('floating_rate_business_day_convention')
-        self.__floating_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodSwap(Instrument):
+    commodity: Optional[str] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency_source: Optional[str] = field(default=None, metadata=field_metadata)
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_type: Optional[str] = field(default=None, metadata=field_metadata)
+    number_of_periods: Optional[int] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    fixing_currency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_price_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    commodity_reference_price: Optional[str] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity_period: Optional[Period] = field(default=None, metadata=field_metadata)
+    strategy: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    buy_sells: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    underlier_short_name: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_days_type: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_days_from: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    currency_summary: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    period_details: Optional[Tuple[CommodOTCSwapPeriod, ...]] = field(default=None, metadata=field_metadata)
+    native_quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Swap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def fixed_rate(self) -> Union[float, str]:
-        """The coupon of the fixed leg"""
-        return self.__fixed_rate
 
-    @fixed_rate.setter
-    def fixed_rate(self, value: Union[float, str]):
-        self._property_changed('fixed_rate')
-        self.__fixed_rate = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodVolVarSwap(Instrument):
+    notional_currency: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    notional: Optional[float] = field(default=1.0, metadata=field_metadata)
+    floating_rate_is_capped: Optional[str] = field(default=None, metadata=field_metadata)
+    end_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    margined: Optional[float] = field(default=None, metadata=field_metadata)
+    market_disruption_agreement: Optional[str] = field(default=None, metadata=field_metadata)
+    mean_rule: Optional[CommodMeanRule] = field(default=None, metadata=field_metadata)
+    divisor: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_mean: Optional[float] = field(default=None, metadata=field_metadata)
+    first_fixing: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_cap: Optional[float] = field(default=None, metadata=field_metadata)
+    fx_fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    annualization_factor: Optional[float] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    contract: Optional[str] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    swap_type: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixing_currency: Optional[CurrencyName] = field(default=None, metadata=field_metadata)
+    asset_fixing_source: Optional[str] = field(default=None, metadata=field_metadata)
+    sampling_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    variance_convention: Optional[VarianceConvention] = field(default=None, metadata=field_metadata)
+    asset: Optional[str] = field(default=None, metadata=field_metadata)
+    start_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.VolVarSwap, metadata=config(field_name='type', exclude=exclude_none))
+    extra_sampling_calendars: Optional[str] = field(init=False, default='--Blank--', metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def fixed_rate_business_day_convention(self) -> Union[BusinessDayConvention, str]:
-        """The business day convention for the fixed rate"""
-        return self.__fixed_rate_business_day_convention
 
-    @fixed_rate_business_day_convention.setter
-    def fixed_rate_business_day_convention(self, value: Union[BusinessDayConvention, str]):
-        self._property_changed('fixed_rate_business_day_convention')
-        self.__fixed_rate_business_day_convention = get_enum_value(BusinessDayConvention, value)        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqOptionStrategy(Instrument):
+    underlier: Union[float, str] = field(default=None, metadata=field_metadata)
+    strategy: str = field(default=None, metadata=field_metadata)
+    legs: Tuple[EqOptionLeg, ...] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    option_style: Optional[OptionStyle] = field(default=None, metadata=field_metadata)
+    number_of_options: Optional[float] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium: Optional[float] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    valuation_time: Optional[ValuationTime] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    exchange: Optional[str] = field(default=None, metadata=field_metadata)
+    trade_as: Optional[TradeAs] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionStrategy, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
-    @property
-    def fee(self) -> float:
-        """The fee"""
-        return self.__fee
 
-    @fee.setter
-    def fee(self, value: float):
-        self._property_changed('fee')
-        self.__fee = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class EqSynthetic(Instrument):
+    underlier: Union[float, str] = field(default=None, metadata=field_metadata)
+    expiry: Union[datetime.date, str] = field(default=None, metadata=field_metadata)
+    currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    swap_type: Optional[SwapType] = field(default=SwapType.Eq_Swap, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[datetime.date] = field(default=None, metadata=field_metadata)
+    num_of_underlyers: Optional[float] = field(default=None, metadata=field_metadata)
+    rate_tenor: Optional[str] = field(default=None, metadata=field_metadata)
+    commission: Optional[float] = field(default=None, metadata=field_metadata)
+    commission_units: Optional[str] = field(default=None, metadata=field_metadata)
+    strike: Optional[float] = field(default=None, metadata=field_metadata)
+    initial_valuation_date: Optional[str] = field(default=None, metadata=field_metadata)
+    schedule_type: Optional[str] = field(default=None, metadata=field_metadata)
+    oet_terms: Optional[Tuple[EqSyntheticOETTerms, ...]] = field(default=None, metadata=field_metadata)
+    dividend_pay_ratio: Optional[float] = field(default=None, metadata=field_metadata)
+    trade_date: Optional[str] = field(default=None, metadata=field_metadata)
+    fx_data_source: Optional[str] = field(default=None, metadata=field_metadata)
+    rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    eq_leg: Optional[Tuple[EqSyntheticLeg, ...]] = field(default=None, metadata=field_metadata)
+    funding_leg: Optional[Tuple[EqSyntheticLeg, ...]] = field(default=None, metadata=field_metadata)
+    valuation_bdc: Optional[float] = field(default=None, metadata=field_metadata)
+    payment_bdc: Optional[float] = field(default=None, metadata=field_metadata)
+    commission_type: Optional[str] = field(default=None, metadata=field_metadata)
+    designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    reset_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    payment_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Equity, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Synthetic, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FRA(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    clearing_legally_binding: Optional[float] = field(default=None, metadata=field_metadata)
+    day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    calendar: Optional[str] = field(default=None, metadata=field_metadata)
+    rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    maturity: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    payment_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.FRA, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXAccumulator(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    new_or_unwind: Optional[NewOrUnwind] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    european_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    knock_out_level: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    accum_or_decum: Optional[AccumOrDecum] = field(default=None, metadata=field_metadata)
+    accumulator_type: Optional[AccumulatorType] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    coupon_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    guaranteed_coupons: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    number_of_expiry: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixing_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    schedules: Optional[Tuple[FXAccumulatorScheduleLeg, ...]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Accumulator, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXDualDoubleKnockout(Instrument):
+    legs: Tuple[FXDualDoubleKnockoutLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.DualDoubleKnockout, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossBinary(Instrument):
+    legs: Tuple[FXMultiCrossBinaryLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossBinary, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossDoubleBinary(Instrument):
+    legs: Tuple[FXMultiCrossDoubleBinaryLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossDoubleBinary, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXMultiCrossDoubleOneTouch(Instrument):
+    legs: Tuple[FXMultiCrossDoubleOneTouchLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    payout_type: Optional[PayoutType] = field(default=None, metadata=field_metadata)
+    touch_or_no_touch: Optional[TouchNoTouch] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MultiCrossDoubleTouch, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXOptionStrategy(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    strategy_name: Optional[str] = field(default=None, metadata=field_metadata)
+    legs: Optional[Tuple[FXOptionLeg, ...]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount_in_other_currency: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_price: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    expiration_time: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    exercise_style: Optional[OptionExerciseStyle] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionStrategy, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXPivot(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    new_or_unwind: Optional[NewOrUnwind] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    lower_leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    lower_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    lower_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    pivot: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    upper_leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixing_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    number_of_expiry: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    coupon_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    target_type: Optional[TargetType] = field(default=None, metadata=field_metadata)
+    target: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    schedules: Optional[Tuple[FXPivotScheduleLeg, ...]] = field(default=None, metadata=field_metadata)
+    target_adj_notional_or_strike: Optional[NotionalOrStrike] = field(default=None, metadata=field_metadata)
+    payment_on_hitting_target: Optional[TargetPaymentType] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Pivot, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXTarf(Instrument):
+    pair: Optional[str] = field(default=None, metadata=field_metadata)
+    new_or_unwind: Optional[NewOrUnwind] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    profit_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    loss_strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixing_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    long_or_short: Optional[LongShort] = field(default=None, metadata=field_metadata)
+    european_knock_in: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    number_of_expiry: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    coupon_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    first_fixing_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    leverage_ratio: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    target_type: Optional[TargetType] = field(default=None, metadata=field_metadata)
+    target: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    schedules: Optional[Tuple[FXTarfScheduleLeg, ...]] = field(default=None, metadata=field_metadata)
+    target_adj_notional_or_strike: Optional[NotionalOrStrike] = field(default=None, metadata=field_metadata)
+    payment_on_hitting_target: Optional[TargetPaymentType] = field(default=None, metadata=field_metadata)
+    settlement_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Tarf, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXWorstOf(Instrument):
+    legs: Tuple[FXWorstOfLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    best_or_worst: Optional[BestWorst] = field(default=None, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.WorstOf, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class FXWorstOfKO(Instrument):
+    legs: Tuple[FXWorstOfKOLeg, ...] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    best_or_worst: Optional[BestWorst] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    settlement_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    method_of_settlement: Optional[OptionSettlementMethod] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.FX, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.WorstOfKO, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRAssetSwapFxdFlt(Instrument):
+    asw_type: Optional[AswType] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=None, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_fx: Optional[float] = field(default=None, metadata=field_metadata)
+    floating_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_maturity: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    identifier: Optional[str] = field(default=None, metadata=field_metadata)
+    identifier_type: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    pay_or_receive: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    traded_clean_price: Optional[float] = field(default=100.0, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.AssetSwapFxdFlt, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRAssetSwapFxdFxd(Instrument):
+    asw_type: Optional[AswType] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=None, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    coupon: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    asset_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    asset_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    identifier: Optional[str] = field(default=None, metadata=field_metadata)
+    identifier_type: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_maturity: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_maturity: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    clean_price: Optional[float] = field(default=100.0, metadata=field_metadata)
+    settlement_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.AssetSwapFxdFxd, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRBasisSwap(Instrument):
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    payer_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payer_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    payer_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    receiver_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    receiver_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    receiver_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.BasisSwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRBondOption(Instrument):
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    option_type: Optional[OptionType] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    strike_type: Optional[BondStrikeType] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    settlement: Optional[SettlementType] = field(default=None, metadata=field_metadata)
+    underlier_type: Optional[UnderlierType] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.BondOption, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRCMSOption(Instrument):
+    cap_floor: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index: Optional[str] = field(default=None, metadata=field_metadata)
+    rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    start_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CMSOption, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRCMSOptionStrip(Instrument):
+    cap_floor: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    reset_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CMSOptionStrip, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRCMSSpreadOption(Instrument):
+    cap_floor: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index1_tenor: Optional[str] = field(default=None, metadata=field_metadata)
+    index2_tenor: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CMSSpreadOption, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRCMSSpreadOptionStrip(Instrument):
+    cap_floor: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index1: Optional[str] = field(default=None, metadata=field_metadata)
+    index2: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    reset_delay: Optional[str] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CMSSpreadOptionStrip, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRFixedLeg(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.FixedLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRFloatLeg(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    floating_rate_for_the_initial_calculation_period: Optional[float] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.FloatLeg, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRSwap(Instrument):
+    pay_or_receive: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    floating_rate_for_the_initial_calculation_period: Optional[float] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    fixed_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    roll_convention: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_accrual_convention: Optional[AccrualConvention] = field(default=None, metadata=field_metadata)
+    floating_rate_accrual_convention: Optional[AccrualConvention] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Swap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {PayReceive.Pay: PayReceive.Receive, PayReceive.Receive: PayReceive.Pay}
+            self.pay_or_receive = flip_dict[self.pay_or_receive]
+            self.fee *= -1
+        self.notional_amount *= abs(scaling)
+        return
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRSwaption(Instrument):
+    pay_or_receive: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    expiration_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_spread: Optional[float] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    clearing_house: Optional[SwapClearingHouse] = field(default=None, metadata=field_metadata)
+    settlement: Optional[SwapSettlement] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.Swaption, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+    def scale_in_place(self, scaling: Optional[float] = None):
+        if self.unresolved is None:
+            raise RuntimeError('Can only scale resolved instruments')
+        if scaling is None or scaling == 1:
+            return
+    
+        if scaling < 0:
+            flip_dict = {BuySell.Buy: BuySell.Sell, BuySell.Sell: BuySell.Buy}
+            self.buy_sell = flip_dict[self.buy_sell]
+            self.fee *= -1
+        self.notional_amount *= abs(scaling)
+        return
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRXccySwap(Instrument):
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[float] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    payer_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    payer_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payer_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    payer_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    receiver_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    receiver_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    receiver_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    receiver_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    initial_fx_rate: Optional[float] = field(default=None, metadata=field_metadata)
+    payer_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    receiver_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payer_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    receiver_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payer_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    notional_reset_side: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.XccySwapMTM, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRXccySwapFixFix(Instrument):
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[float] = field(default=None, metadata=field_metadata)
+    receiver_notional_amount: Optional[float] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    payer_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    payer_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payer_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    payer_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    receiver_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    receiver_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    receiver_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    receiver_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.XccySwapFixFix, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRXccySwapFixFlt(Instrument):
+    pay_or_receive: Optional[PayReceive] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    floating_rate_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    floating_rate_for_the_initial_calculation_period: Optional[float] = field(default=None, metadata=field_metadata)
+    floating_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    floating_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    floating_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fixed_rate_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fixed_rate: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    fixed_rate_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    fixed_rate_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    fixed_rate_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    floating_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fixed_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    floating_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.XccySwapFixFlt, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class IRXccySwapFltFlt(Instrument):
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    principal_exchange: Optional[PrincipalExchange] = field(default=None, metadata=field_metadata)
+    payer_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    payer_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    payer_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    payer_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    payer_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    receiver_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    receiver_spread: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    receiver_rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_designated_maturity: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_frequency: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_day_count_fraction: Optional[DayCountFraction] = field(default=None, metadata=field_metadata)
+    receiver_business_day_convention: Optional[BusinessDayConvention] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payer_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    receiver_first_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payer_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    receiver_last_stub: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    payer_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    receiver_holidays: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.XccySwap, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class MacroBasket(Instrument):
+    cap_floor: Optional[str] = field(default=None, metadata=field_metadata)
+    termination_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    notional_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    effective_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    strike: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    index: Optional[str] = field(default=None, metadata=field_metadata)
+    rate_option: Optional[str] = field(default=None, metadata=field_metadata)
+    multiplier: Optional[float] = field(default=None, metadata=field_metadata)
+    premium: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    premium_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee: Optional[float] = field(default=0.0, metadata=field_metadata)
+    fee_currency: Optional[Currency] = field(default=None, metadata=field_metadata)
+    start_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    fee_payment_date: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cross_Asset, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.MacroBasket, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CommodOTCOption(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    quantity: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    start: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    number_of_periods: Optional[int] = field(default=None, metadata=field_metadata)
+    quantity_unit: Optional[str] = field(default=None, metadata=field_metadata)
+    settlement: Optional[str] = field(default=None, metadata=field_metadata)
+    premium_summary: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    legs: Optional[Tuple[CommodOTCOptionLeg, ...]] = field(default=None, metadata=field_metadata)
+    end: Optional[Union[datetime.date, str]] = field(default=None, metadata=field_metadata)
+    quantity_period: Optional[Period] = field(default=None, metadata=field_metadata)
+    strategy: Optional[str] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Commod, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.OptionStrategy, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class InvoiceSpread(Instrument):
+    buy_sell: Optional[BuySell] = field(default=None, metadata=field_metadata)
+    notional_amount: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    underlier: Optional[Union[float, str]] = field(default=None, metadata=field_metadata)
+    swap: Optional[IRSwap] = field(default=None, metadata=field_metadata)
+    future: Optional[IRBondFuture] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Rates, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.InvoiceSpread, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class CSLPython(Instrument):
+    class_name: Optional[str] = field(default=None, metadata=field_metadata)
+    denominated: Optional[Currency] = field(default=None, metadata=field_metadata)
+    double_params: Optional[Tuple[CSLDouble, ...]] = field(default=None, metadata=field_metadata)
+    date_params: Optional[Tuple[CSLDate, ...]] = field(default=None, metadata=field_metadata)
+    string_params: Optional[Tuple[CSLString, ...]] = field(default=None, metadata=field_metadata)
+    simple_schedule_params: Optional[Tuple[CSLSimpleSchedule, ...]] = field(default=None, metadata=field_metadata)
+    schedule_params: Optional[Tuple[CSLSchedule, ...]] = field(default=None, metadata=field_metadata)
+    currency_params: Optional[Tuple[CSLCurrency, ...]] = field(default=None, metadata=field_metadata)
+    stock_params: Optional[Tuple[CSLStock, ...]] = field(default=None, metadata=field_metadata)
+    index_params: Optional[Tuple[CSLIndex, ...]] = field(default=None, metadata=field_metadata)
+    fx_cross_params: Optional[Tuple[CSLFXCross, ...]] = field(default=None, metadata=field_metadata)
+    double_array_params: Optional[Tuple[CSLDoubleArray, ...]] = field(default=None, metadata=field_metadata)
+    date_array_params: Optional[Tuple[CSLDateArray, ...]] = field(default=None, metadata=field_metadata)
+    string_array_params: Optional[Tuple[CSLStringArray, ...]] = field(default=None, metadata=field_metadata)
+    simple_schedule_array_params: Optional[Tuple[CSLSimpleScheduleArray, ...]] = field(default=None, metadata=field_metadata)
+    schedule_array_params: Optional[Tuple[CSLScheduleArray, ...]] = field(default=None, metadata=field_metadata)
+    currency_array_params: Optional[Tuple[CSLCurrencyArray, ...]] = field(default=None, metadata=field_metadata)
+    stock_array_params: Optional[Tuple[CSLStockArray, ...]] = field(default=None, metadata=field_metadata)
+    index_array_params: Optional[Tuple[CSLIndexArray, ...]] = field(default=None, metadata=field_metadata)
+    fx_cross_array_params: Optional[Tuple[CSLFXCrossArray, ...]] = field(default=None, metadata=field_metadata)
+    asset_class: Optional[AssetClass] = field(init=False, default=AssetClass.Cross_Asset, metadata=field_metadata)
+    type_: Optional[AssetType] = field(init=False, default=AssetType.CSL, metadata=config(field_name='type', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=name_metadata)

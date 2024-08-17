@@ -13,28 +13,32 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-
-import datetime
+import datetime as dt
+from enum import Enum
 import json
-import re
-
 import pandas as pd
 
-from gs_quant.base import Base, EnumBase
+from gs_quant.base import Base, Market
+from gs_quant.json_convertors import encode_date_or_str, encode_datetime
+
+
+def encode_default(o):
+    if isinstance(o, dt.datetime):
+        return encode_datetime(o)
+    if isinstance(o, dt.date):
+        return encode_date_or_str(o)
+    elif isinstance(o, dt.time):
+        return o.isoformat(timespec='milliseconds')
+    elif isinstance(o, Enum):
+        return o.value
+    elif isinstance(o, (Base, Market)):
+        return o.to_dict()
+    elif isinstance(o, pd.DataFrame):
+        return o.to_json()
 
 
 class JSONEncoder(json.JSONEncoder):
 
     def default(self, o):
-        if isinstance(o, datetime.datetime):
-            return o.strftime('%Y-%m-%dT%H:%M:%S.') + '{:06d}'.format(o.microsecond)[:-3] + 'Z'
-        if isinstance(o, datetime.date):
-            return o.isoformat()
-        elif isinstance(o, EnumBase):
-            return o.value
-        elif isinstance(o, pd.DataFrame):
-            return o.to_json()
-        elif isinstance(o, Base):
-            return {re.sub('_$', '', k): v for k, v in o.as_dict(as_camel_case=True).items()}
-        else:
-            return json.JSONEncoder.default(self, o)
+        ret = encode_default(o)
+        return super().default(o) if ret is None else ret

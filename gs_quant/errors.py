@@ -22,11 +22,15 @@ class MqError(Exception):
     pass
 
 
-class MqValueError(MqError):
+class MqValueError(MqError, ValueError):
     pass
 
 
 class MqTypeError(MqError):
+    pass
+
+
+class MqWrappedError(MqError):
     pass
 
 

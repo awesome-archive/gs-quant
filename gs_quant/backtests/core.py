@@ -15,42 +15,18 @@ under the License.
 """
 
 from enum import Enum
-from typing import Tuple
-
+from typing import Tuple, NamedTuple, Union
+import datetime
 from gs_quant.base import EnumBase
-from gs_quant.target.backtests import Backtest as __Backtest, BacktestResult
+from gs_quant.target.backtests import Backtest as __Backtest, BacktestResult, FlowVolBacktestMeasure
+from typing import Optional
 
 
 # TODO add these in Studio as a standalone JSON, so they will be generated
 
-class QuantityType(EnumBase, Enum):
-    Notional = 'notional'
-    Quantity = 'quantity'
-    Vega = 'vega'
-
 
 class TradeInMethod(EnumBase, Enum):
     FixedRoll = 'fixedRoll'
-
-
-class FlowVolBacktestMeasure(EnumBase, Enum):
-    ALL_MEASURES = "ALL MEASURES",
-    PNL_SPOT = "PNL_spot",
-    PNL_VOL = "PNL_vol",
-    PNL_CARRY = "PNL_carry",
-    PNL_DELTA = "PNL_delta",
-    PNL_GAMMA = "PNL_gamma",
-    PNL_HIGHER_ORDER_SPOT = "PNL_higher_order_spot",
-    PNL_HIGHER_ORDER_VOL = "PNL_higher_order_vol",
-    PNL_THETA = "PNL_theta",
-    TOTAL = "Total",
-    TRANSACTION_COSTS = "transaction_costs",
-    PNL_UNEXPLAINED = "PNL_unexplained",
-    PNL_VEGA = "PNL_vega",
-    PNL = "PNL",
-    DELTA = "delta",
-    GAMMA = "gamma",
-    VEGA = "vega",
 
 
 class Backtest(__Backtest):
@@ -58,3 +34,22 @@ class Backtest(__Backtest):
     def get_results(self) -> Tuple[BacktestResult, ...]:
         from gs_quant.api.gs.backtests import GsBacktestApi
         return GsBacktestApi.get_results(backtest_id=self.id)
+
+
+class MarketModel(EnumBase, Enum):
+    STICKY_FIXED_STRIKE = "SFK"
+    STICKY_DELTA = "SD"
+
+
+class TimeWindow(NamedTuple):
+    start: Union[datetime.time, datetime.datetime] = None
+    end: Union[datetime.time, datetime.datetime] = None
+
+
+class ValuationFixingType(EnumBase, Enum):
+    PRICE = 'price'
+
+
+class ValuationMethod(NamedTuple):
+    data_tag: ValuationFixingType = ValuationFixingType.PRICE
+    window: Optional[TimeWindow] = None

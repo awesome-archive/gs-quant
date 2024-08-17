@@ -14,1016 +14,460 @@ specific language governing permissions and limitations
 under the License.
 """
 
-from gs_quant.target.common import *
+from gs_quant.base import *
+from gs_quant.common import *
 import datetime
-from typing import Tuple, Union
-from gs_quant.base import Base, camel_case_translate, get_enum_value
+from typing import Dict, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from dataclasses_json import LetterCase, config, dataclass_json
+from enum import Enum
 
 
-class Author(Base):
-        
-    """Object containing author data"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        id_: str = None,
-        name: str = None,
-        division=None
-    ):        
-        super().__init__()
-        self.__id = id_
-        self.name = name
-        self.division = division
-
-    @property
-    def id(self) -> str:
-        """Author GUID"""
-        return self.__id
-
-    @id.setter
-    def id(self, value: str):
-        self._property_changed('id')
-        self.__id = value        
-
-    @property
-    def name(self) -> str:
-        """Author name"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def division(self):
-        return self.__division
-
-    @division.setter
-    def division(self, value):
-        self._property_changed('division')
-        self.__division = value        
+class Division(EnumBase, Enum):    
+    
+    SECDIV = 'SECDIV'
+    IBD = 'IBD'
+    RISK = 'RISK'
+    GIR = 'GIR'
+    EO = 'EO'
+    KENSHO = 'KENSHO'    
 
 
-class BulkDeleteContentResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: Tuple[str, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> Tuple[str, ...]:
-        """Array of content IDs which were successfully deleted"""
-        return self.__data
-
-    @data.setter
-    def data(self, value: Tuple[str, ...]):
-        self._property_changed('data')
-        self.__data = value        
+class InvestmentRecommendationDirection(EnumBase, Enum):    
+    
+    Buy = 'Buy'
+    Hold = 'Hold'
+    Sell = 'Sell'
+    Strategy = 'Strategy'    
 
 
+class Language(EnumBase, Enum):    
+    
+    """ISO 639-1 language code for the content piece"""
+
+    an = 'an'
+    ar = 'ar'
+    _as = 'as'
+    av = 'av'
+    ay = 'ay'
+    az = 'az'
+    ba = 'ba'
+    be = 'be'
+    bg = 'bg'
+    bh = 'bh'
+    bi = 'bi'
+    bm = 'bm'
+    bn = 'bn'
+    bo = 'bo'
+    br = 'br'
+    bs = 'bs'
+    ca = 'ca'
+    ce = 'ce'
+    ch = 'ch'
+    co = 'co'
+    cr = 'cr'
+    cs = 'cs'
+    cu = 'cu'
+    cv = 'cv'
+    cy = 'cy'
+    da = 'da'
+    de = 'de'
+    dv = 'dv'
+    dz = 'dz'
+    ee = 'ee'
+    el = 'el'
+    en = 'en'
+    eo = 'eo'
+    es = 'es'
+    et = 'et'
+    eu = 'eu'
+    fa = 'fa'
+    ff = 'ff'
+    fi = 'fi'
+    fj = 'fj'
+    fo = 'fo'
+    fr = 'fr'
+    fy = 'fy'
+    ga = 'ga'
+    gd = 'gd'
+    gl = 'gl'
+    gn = 'gn'
+    gu = 'gu'
+    gv = 'gv'
+    ha = 'ha'
+    he = 'he'
+    hi = 'hi'
+    ho = 'ho'
+    hr = 'hr'
+    ht = 'ht'
+    hu = 'hu'
+    hy = 'hy'
+    hz = 'hz'
+    ia = 'ia'
+    id = 'id'
+    ie = 'ie'
+    ig = 'ig'
+    ii = 'ii'
+    ik = 'ik'
+    io = 'io'
+    _is = 'is'
+    it = 'it'
+    iu = 'iu'
+    ja = 'ja'
+    jv = 'jv'
+    ka = 'ka'
+    kg = 'kg'
+    ki = 'ki'
+    kj = 'kj'
+    kk = 'kk'
+    kl = 'kl'
+    km = 'km'
+    kn = 'kn'
+    ko = 'ko'
+    kr = 'kr'
+    ks = 'ks'
+    ku = 'ku'
+    kv = 'kv'
+    kw = 'kw'
+    ky = 'ky'
+    la = 'la'
+    lb = 'lb'
+    lg = 'lg'
+    li = 'li'
+    ln = 'ln'
+    lo = 'lo'
+    lt = 'lt'
+    lu = 'lu'
+    lv = 'lv'
+    mg = 'mg'
+    mh = 'mh'
+    mi = 'mi'
+    mk = 'mk'
+    ml = 'ml'
+    mn = 'mn'
+    mr = 'mr'
+    ms = 'ms'
+    mt = 'mt'
+    my = 'my'
+    na = 'na'
+    nb = 'nb'
+    nd = 'nd'
+    ne = 'ne'
+    ng = 'ng'
+    nl = 'nl'
+    nn = 'nn'
+    no = 'no'
+    nr = 'nr'
+    nv = 'nv'
+    ny = 'ny'
+    oc = 'oc'
+    oj = 'oj'
+    om = 'om'
+    _or = 'or'
+    os = 'os'
+    pa = 'pa'
+    pi = 'pi'
+    pl = 'pl'
+    ps = 'ps'
+    pt = 'pt'
+    qu = 'qu'
+    rm = 'rm'
+    rn = 'rn'
+    ro = 'ro'
+    ru = 'ru'
+    rw = 'rw'
+    sa = 'sa'
+    sc = 'sc'
+    sd = 'sd'
+    se = 'se'
+    sg = 'sg'
+    si = 'si'
+    sk = 'sk'
+    sl = 'sl'
+    sm = 'sm'
+    sn = 'sn'
+    so = 'so'
+    sq = 'sq'
+    sr = 'sr'
+    ss = 'ss'
+    st = 'st'
+    su = 'su'
+    sv = 'sv'
+    sw = 'sw'
+    ta = 'ta'
+    te = 'te'
+    tg = 'tg'
+    th = 'th'
+    ti = 'ti'
+    tk = 'tk'
+    tl = 'tl'
+    tn = 'tn'
+    to = 'to'
+    tr = 'tr'
+    ts = 'ts'
+    tt = 'tt'
+    tw = 'tw'
+    ty = 'ty'
+    ug = 'ug'
+    uk = 'uk'
+    ur = 'ur'
+    uz = 'uz'
+    ve = 've'
+    vi = 'vi'
+    vo = 'vo'
+    wa = 'wa'
+    wo = 'wo'
+    xh = 'xh'
+    yi = 'yi'
+    yo = 'yo'
+    za = 'za'
+    zh = 'zh'
+    zu = 'zu'    
+
+
+class Origin(EnumBase, Enum):    
+    
+    """Where the content originated from"""
+
+    WEB = 'WEB'
+    API = 'API'
+    EMAIL = 'EMAIL'
+    BLOG = 'BLOG'
+    ARTICLE = 'ARTICLE'    
+
+
+class QueryableStatus(EnumBase, Enum):    
+    
+    """Status/state of a content piece that can be queried by a user"""
+
+    Draft = 'Draft'
+    Published = 'Published'
+    Replaced = 'Replaced'    
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class ChannelMetadata(Base):
+    name: Optional[str] = field(default=None, metadata=field_metadata)
+    channel_visibility: Optional[object] = field(default=None, metadata=field_metadata)
+    restricted: Optional[bool] = field(default=None, metadata=field_metadata)
+    streaming: Optional[bool] = field(default=None, metadata=field_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class Content(Base):
-        
-    """Body of the content piece"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        body: str,
-        mime_type,
-        encoding,
-        name: str = None
-    ):        
-        super().__init__()
-        self.body = body
-        self.mime_type = mime_type
-        self.encoding = encoding
-        self.name = name
-
-    @property
-    def body(self) -> str:
-        """Content body - text/* or base64-encoded binary"""
-        return self.__body
-
-    @body.setter
-    def body(self, value: str):
-        self._property_changed('body')
-        self.__body = value        
-
-    @property
-    def mime_type(self):
-        """Allowed mime-types"""
-        return self.__mime_type
-
-    @mime_type.setter
-    def mime_type(self, value):
-        self._property_changed('mime_type')
-        self.__mime_type = value        
-
-    @property
-    def encoding(self):
-        """Encoding for content piece body"""
-        return self.__encoding
-
-    @encoding.setter
-    def encoding(self, value):
-        self._property_changed('encoding')
-        self.__encoding = value        
+    body: str = field(default=None, metadata=field_metadata)
+    mime_type: object = field(default=None, metadata=field_metadata)
+    encoding: object = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
-class DeleteContentResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: str = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> str:
-        """Content ID which was successfully deleted"""
-        return self.__data
-
-    @data.setter
-    def data(self, value: str):
-        self._property_changed('data')
-        self.__data = value        
+class Object(DictBase):
+    pass
 
 
-class Disclaimer(Base):
-        
-    """Disclaimer associated with a content piece"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        text: str = None,
-        type_=None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.text = text
-        self.__type = type_
-        self.name = name
-
-    @property
-    def text(self) -> str:
-        return self.__text
-
-    @text.setter
-    def text(self, value: str):
-        self._property_changed('text')
-        self.__text = value        
-
-    @property
-    def type(self):
-        return self.__type
-
-    @type.setter
-    def type(self, value):
-        self._property_changed('type')
-        self.__type = value        
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class Author(Base):
+    id_: Optional[str] = field(default=None, metadata=config(field_name='id', exclude=exclude_none))
+    name: Optional[str] = field(default=None, metadata=field_metadata)
+    division: Optional[Division] = field(default=None, metadata=field_metadata)
+    email: Optional[str] = field(default=None, metadata=field_metadata)
+    title: Optional[str] = field(default=None, metadata=field_metadata)
+    kerberos: Optional[str] = field(default=None, metadata=field_metadata)
 
 
-class Object(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        name: str = None
-    ):        
-        super().__init__()
-        self.name = name
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class BulkDeleteContentResponse(Base):
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class Certification(Base):
-        
-    """Field to store SEAL certification object"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        submission_id: str,
-        version: str,
-        submission_state,
-        allowed_distribution: Tuple[Object, ...],
-        etask_process_instance_id: str = None,
-        tags: Tuple[None, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.submission_id = submission_id
-        self.version = version
-        self.submission_state = submission_state
-        self.etask_process_instance_id = etask_process_instance_id
-        self.allowed_distribution = allowed_distribution
-        self.tags = tags
-        self.name = name
-
-    @property
-    def submission_id(self) -> str:
-        """Submission ID assigned by SEAL"""
-        return self.__submission_id
-
-    @submission_id.setter
-    def submission_id(self, value: str):
-        self._property_changed('submission_id')
-        self.__submission_id = value        
-
-    @property
-    def version(self) -> str:
-        """Submission version assigned by SEAL"""
-        return self.__version
-
-    @version.setter
-    def version(self, value: str):
-        self._property_changed('version')
-        self.__version = value        
-
-    @property
-    def submission_state(self):
-        """Current state of a submission as reported by SEAL"""
-        return self.__submission_state
-
-    @submission_state.setter
-    def submission_state(self, value):
-        self._property_changed('submission_state')
-        self.__submission_state = value        
-
-    @property
-    def etask_process_instance_id(self) -> str:
-        """Field to store eTask ID associated with SEAL certification of content piece"""
-        return self.__etask_process_instance_id
-
-    @etask_process_instance_id.setter
-    def etask_process_instance_id(self, value: str):
-        self._property_changed('etask_process_instance_id')
-        self.__etask_process_instance_id = value        
-
-    @property
-    def allowed_distribution(self) -> Tuple[Object, ...]:
-        """A list of allowed distributions"""
-        return self.__allowed_distribution
-
-    @allowed_distribution.setter
-    def allowed_distribution(self, value: Tuple[Object, ...]):
-        self._property_changed('allowed_distribution')
-        self.__allowed_distribution = value        
-
-    @property
-    def tags(self) -> Tuple[None, ...]:
-        """SEAL generated, enumerated tags"""
-        return self.__tags
-
-    @tags.setter
-    def tags(self, value: Tuple[None, ...]):
-        self._property_changed('tags')
-        self.__tags = value        
+    submission_id: str = field(default=None, metadata=field_metadata)
+    version: str = field(default=None, metadata=field_metadata)
+    submission_state: object = field(default=None, metadata=field_metadata)
+    allowed_distribution: Tuple[Object, ...] = field(default=None, metadata=field_metadata)
+    etask_process_instance_id: Optional[str] = field(default=None, metadata=field_metadata)
+    tags: Optional[Tuple[None, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class DeleteContentResponse(Base):
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class InvestmentRecommendationAsset(Base):
+    asset_id: str = field(default=None, metadata=field_metadata)
+    direction: Optional[InvestmentRecommendationDirection] = field(default=None, metadata=field_metadata)
+    currency: Optional[str] = field(default=None, metadata=field_metadata)
+    price: Optional[float] = field(default=None, metadata=field_metadata)
+    price_target: Optional[float] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class InvestmentRecommendationCustomAsset(Base):
+    asset_name: str = field(default=None, metadata=field_metadata)
+    direction: Optional[InvestmentRecommendationDirection] = field(default=None, metadata=field_metadata)
+    currency: Optional[str] = field(default=None, metadata=field_metadata)
+    price: Optional[float] = field(default=None, metadata=field_metadata)
+    price_target: Optional[float] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        id_: str = None,
-        version: str = None,
-        name: str = None,
-        entitlements: Entitlements = None,
-        created_by_id: str = None,
-        created_time: datetime.datetime = None,
-        last_updated_time: datetime.datetime = None,
-        channels: Tuple[str, ...] = None,
-        content: Content = None
-    ):        
-        super().__init__()
-        self.__id = id_
-        self.version = version
-        self.name = name
-        self.entitlements = entitlements
-        self.created_by_id = created_by_id
-        self.created_time = created_time
-        self.last_updated_time = last_updated_time
-        self.channels = channels
-        self.content = content
-
-    @property
-    def id(self) -> str:
-        """UUID for the content piece"""
-        return self.__id
-
-    @id.setter
-    def id(self, value: str):
-        self._property_changed('id')
-        self.__id = value        
-
-    @property
-    def version(self) -> str:
-        """Version UUID for the content piece"""
-        return self.__version
-
-    @version.setter
-    def version(self, value: str):
-        self._property_changed('version')
-        self.__version = value        
-
-    @property
-    def name(self) -> str:
-        """Name of the content piece"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def entitlements(self) -> Entitlements:
-        """Entitlements for a content piece"""
-        return self.__entitlements
-
-    @entitlements.setter
-    def entitlements(self, value: Entitlements):
-        self._property_changed('entitlements')
-        self.__entitlements = value        
-
-    @property
-    def created_by_id(self) -> str:
-        """Original user GUID who created the content piece"""
-        return self.__created_by_id
-
-    @created_by_id.setter
-    def created_by_id(self, value: str):
-        self._property_changed('created_by_id')
-        self.__created_by_id = value        
-
-    @property
-    def created_time(self) -> datetime.datetime:
-        """ISO 8601-formatted timestamp"""
-        return self.__created_time
-
-    @created_time.setter
-    def created_time(self, value: datetime.datetime):
-        self._property_changed('created_time')
-        self.__created_time = value        
-
-    @property
-    def last_updated_time(self) -> datetime.datetime:
-        """ISO 8601-formatted timestamp"""
-        return self.__last_updated_time
-
-    @last_updated_time.setter
-    def last_updated_time(self, value: datetime.datetime):
-        self._property_changed('last_updated_time')
-        self.__last_updated_time = value        
-
-    @property
-    def channels(self) -> Tuple[str, ...]:
-        """List of channels on the content piece"""
-        return self.__channels
-
-    @channels.setter
-    def channels(self, value: Tuple[str, ...]):
-        self._property_changed('channels')
-        self.__channels = value        
-
-    @property
-    def content(self) -> Content:
-        """Body of the content piece"""
-        return self.__content
-
-    @content.setter
-    def content(self, value: Content):
-        self._property_changed('content')
-        self.__content = value        
+    id_: Optional[str] = field(default=None, metadata=config(field_name='id', exclude=exclude_none))
+    version: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=field_metadata)
+    entitlements: Optional[Entitlements] = field(default=None, metadata=field_metadata)
+    entitlement_exclusions: Optional[EntitlementExclusions] = field(default=None, metadata=field_metadata)
+    created_by_id: Optional[str] = field(default=None, metadata=field_metadata)
+    created_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
+    last_updated_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
+    channels: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    content: Optional[Content] = field(default=None, metadata=field_metadata)
+    language: Optional[Language] = field(default=None, metadata=field_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentUpdateRequest(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        name: str = None,
-        entitlements: Entitlements = None,
-        content: Content = None
-    ):        
-        super().__init__()
-        self.name = name
-        self.entitlements = entitlements
-        self.content = content
-
-    @property
-    def name(self) -> str:
-        """Name of the content piece"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def entitlements(self) -> Entitlements:
-        """Entitlements for a content piece"""
-        return self.__entitlements
-
-    @entitlements.setter
-    def entitlements(self, value: Entitlements):
-        self._property_changed('entitlements')
-        self.__entitlements = value        
-
-    @property
-    def content(self) -> Content:
-        """Body of the content piece"""
-        return self.__content
-
-    @content.setter
-    def content(self, value: Content):
-        self._property_changed('content')
-        self.__content = value        
+    name: Optional[str] = field(default=None, metadata=field_metadata)
+    entitlements: Optional[Entitlements] = field(default=None, metadata=field_metadata)
+    entitlement_exclusions: Optional[EntitlementExclusions] = field(default=None, metadata=field_metadata)
+    content: Optional[Content] = field(default=None, metadata=field_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
+class InvestmentRecommendations(Base):
+    assets: Tuple[InvestmentRecommendationAsset, ...] = field(default=None, metadata=field_metadata)
+    custom_assets: Optional[Tuple[InvestmentRecommendationCustomAsset, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
+
+
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class BulkContentUpdateRequestItem(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        id_: str = None,
-        update: ContentUpdateRequest = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.__id = id_
-        self.update = update
-        self.name = name
-
-    @property
-    def id(self) -> str:
-        """UUID for the content piece"""
-        return self.__id
-
-    @id.setter
-    def id(self, value: str):
-        self._property_changed('id')
-        self.__id = value        
-
-    @property
-    def update(self) -> ContentUpdateRequest:
-        return self.__update
-
-    @update.setter
-    def update(self, value: ContentUpdateRequest):
-        self._property_changed('update')
-        self.__update = value        
+    id_: Optional[str] = field(default=None, metadata=config(field_name='id', exclude=exclude_none))
+    update: Optional[ContentUpdateRequest] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentAuditFields(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        id_: str = None,
-        version: str = None,
-        name: str = None,
-        entitlements: Entitlements = None,
-        created_by_id: str = None,
-        authors: Tuple[Author, ...] = None,
-        created_time: datetime.datetime = None,
-        last_updated_time: datetime.datetime = None
-    ):        
-        super().__init__()
-        self.__id = id_
-        self.version = version
-        self.name = name
-        self.entitlements = entitlements
-        self.created_by_id = created_by_id
-        self.authors = authors
-        self.created_time = created_time
-        self.last_updated_time = last_updated_time
-
-    @property
-    def id(self) -> str:
-        """UUID for the content piece"""
-        return self.__id
-
-    @id.setter
-    def id(self, value: str):
-        self._property_changed('id')
-        self.__id = value        
-
-    @property
-    def version(self) -> str:
-        """Version UUID for the content piece"""
-        return self.__version
-
-    @version.setter
-    def version(self, value: str):
-        self._property_changed('version')
-        self.__version = value        
-
-    @property
-    def name(self) -> str:
-        """Name of the content piece"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def entitlements(self) -> Entitlements:
-        """Entitlements for a content piece"""
-        return self.__entitlements
-
-    @entitlements.setter
-    def entitlements(self, value: Entitlements):
-        self._property_changed('entitlements')
-        self.__entitlements = value        
-
-    @property
-    def created_by_id(self) -> str:
-        """Original user GUID who created the content piece"""
-        return self.__created_by_id
-
-    @created_by_id.setter
-    def created_by_id(self, value: str):
-        self._property_changed('created_by_id')
-        self.__created_by_id = value        
-
-    @property
-    def authors(self) -> Tuple[Author, ...]:
-        """List of author objects"""
-        return self.__authors
-
-    @authors.setter
-    def authors(self, value: Tuple[Author, ...]):
-        self._property_changed('authors')
-        self.__authors = value        
-
-    @property
-    def created_time(self) -> datetime.datetime:
-        """ISO 8601-formatted timestamp"""
-        return self.__created_time
-
-    @created_time.setter
-    def created_time(self, value: datetime.datetime):
-        self._property_changed('created_time')
-        self.__created_time = value        
-
-    @property
-    def last_updated_time(self) -> datetime.datetime:
-        """ISO 8601-formatted timestamp"""
-        return self.__last_updated_time
-
-    @last_updated_time.setter
-    def last_updated_time(self, value: datetime.datetime):
-        self._property_changed('last_updated_time')
-        self.__last_updated_time = value        
+    id_: Optional[str] = field(default=None, metadata=config(field_name='id', exclude=exclude_none))
+    version: Optional[str] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=field_metadata)
+    entitlements: Optional[Entitlements] = field(default=None, metadata=field_metadata)
+    entitlement_exclusions: Optional[EntitlementExclusions] = field(default=None, metadata=field_metadata)
+    created_by_id: Optional[str] = field(default=None, metadata=field_metadata)
+    authors: Optional[Tuple[Author, ...]] = field(default=None, metadata=field_metadata)
+    created_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
+    last_updated_time: Optional[datetime.datetime] = field(default=None, metadata=field_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentParameters(Base):
-        
-    """Parameters of the content piece"""
-
-    @camel_case_translate
-    def __init__(
-        self,
-        namespace: str,
-        author_ids: Tuple[str, ...],
-        language,
-        status=None,
-        tags: Tuple[str, ...] = None,
-        slug: str = None,
-        attachments: Tuple[Content, ...] = None,
-        certification: Certification = None,
-        asset_ids: Tuple[str, ...] = None,
-        origin=None,
-        disclaimers: Tuple[Disclaimer, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.namespace = namespace
-        self.tags = tags
-        self.slug = slug
-        self.author_ids = author_ids
-        self.attachments = attachments
-        self.certification = certification
-        self.asset_ids = asset_ids
-        self.origin = origin
-        self.disclaimers = disclaimers
-        self.language = language
-        self.name = name
-
-    @property
-    def status(self):
-        """Status/state of the content piece"""
-        return self.__status
-
-    @status.setter
-    def status(self, value):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def namespace(self) -> str:
-        """Namespace for which the content piece is associated"""
-        return self.__namespace
-
-    @namespace.setter
-    def namespace(self, value: str):
-        self._property_changed('namespace')
-        self.__namespace = value        
-
-    @property
-    def tags(self) -> Tuple[str, ...]:
-        """List of tags (hashtags or raw string tags) on the content piece"""
-        return self.__tags
-
-    @tags.setter
-    def tags(self, value: Tuple[str, ...]):
-        self._property_changed('tags')
-        self.__tags = value        
-
-    @property
-    def slug(self) -> str:
-        """Optional slug that could be used to refer to this document"""
-        return self.__slug
-
-    @slug.setter
-    def slug(self, value: str):
-        self._property_changed('slug')
-        self.__slug = value        
-
-    @property
-    def author_ids(self) -> Tuple[str, ...]:
-        """List of author GUIDs for the content piece"""
-        return self.__author_ids
-
-    @author_ids.setter
-    def author_ids(self, value: Tuple[str, ...]):
-        self._property_changed('author_ids')
-        self.__author_ids = value        
-
-    @property
-    def attachments(self) -> Tuple[Content, ...]:
-        """List of attachments on the parent content piece"""
-        return self.__attachments
-
-    @attachments.setter
-    def attachments(self, value: Tuple[Content, ...]):
-        self._property_changed('attachments')
-        self.__attachments = value        
-
-    @property
-    def certification(self) -> Certification:
-        """Field to store SEAL certification object"""
-        return self.__certification
-
-    @certification.setter
-    def certification(self, value: Certification):
-        self._property_changed('certification')
-        self.__certification = value        
-
-    @property
-    def asset_ids(self) -> Tuple[str, ...]:
-        """Array of Marquee Asset Ids associated with the content piece"""
-        return self.__asset_ids
-
-    @asset_ids.setter
-    def asset_ids(self, value: Tuple[str, ...]):
-        self._property_changed('asset_ids')
-        self.__asset_ids = value        
-
-    @property
-    def origin(self):
-        """Where the content originated from"""
-        return self.__origin
-
-    @origin.setter
-    def origin(self, value):
-        self._property_changed('origin')
-        self.__origin = value        
-
-    @property
-    def disclaimers(self) -> Tuple[Disclaimer, ...]:
-        """List of disclaimers associated with a content piece"""
-        return self.__disclaimers
-
-    @disclaimers.setter
-    def disclaimers(self, value: Tuple[Disclaimer, ...]):
-        self._property_changed('disclaimers')
-        self.__disclaimers = value        
-
-    @property
-    def language(self):
-        """ISO 639-1 language code for the content piece"""
-        return self.__language
-
-    @language.setter
-    def language(self, value):
-        self._property_changed('language')
-        self.__language = value        
+    author_ids: Tuple[str, ...] = field(default=None, metadata=field_metadata)
+    language: Language = field(default=None, metadata=field_metadata)
+    status: Optional[object] = field(default=None, metadata=field_metadata)
+    source: Optional[Division] = field(default=None, metadata=field_metadata)
+    tags: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    slug: Optional[str] = field(default=None, metadata=field_metadata)
+    attachments: Optional[Tuple[Content, ...]] = field(default=None, metadata=field_metadata)
+    certification: Optional[Certification] = field(default=None, metadata=field_metadata)
+    certification_type: Optional[object] = field(default=None, metadata=field_metadata)
+    asset_ids: Optional[Tuple[str, ...]] = field(default=None, metadata=field_metadata)
+    origin: Optional[Origin] = field(default=None, metadata=field_metadata)
+    investment_recommendations: Optional[InvestmentRecommendations] = field(default=None, metadata=field_metadata)
+    is_flow: Optional[bool] = field(default=None, metadata=field_metadata)
+    is_research_summary: Optional[bool] = field(default=None, metadata=field_metadata)
+    is_restricted: Optional[bool] = field(default=None, metadata=field_metadata)
+    post_sharing_type: Optional[object] = field(default=None, metadata=field_metadata)
+    channels_metadata: Optional[Tuple[ChannelMetadata, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class GetManyContentsResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: Tuple[ContentResponse, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> Tuple[ContentResponse, ...]:
-        """Array of content pieces"""
-        return self.__data
-
-    @data.setter
-    def data(self, value: Tuple[ContentResponse, ...]):
-        self._property_changed('data')
-        self.__data = value        
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[Tuple[ContentResponse, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class BulkContentUpdateResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: Tuple[ContentAuditFields, ...] = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> Tuple[ContentAuditFields, ...]:
-        """Array of updated content data"""
-        return self.__data
-
-    @data.setter
-    def data(self, value: Tuple[ContentAuditFields, ...]):
-        self._property_changed('data')
-        self.__data = value        
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[Tuple[ContentAuditFields, ...]] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentCreateRequest(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        name: str,
-        entitlements: Entitlements,
-        content: Content,
-        parameters: ContentParameters
-    ):        
-        super().__init__()
-        self.name = name
-        self.entitlements = entitlements
-        self.content = content
-        self.parameters = parameters
-
-    @property
-    def name(self) -> str:
-        """Name of the content piece"""
-        return self.__name
-
-    @name.setter
-    def name(self, value: str):
-        self._property_changed('name')
-        self.__name = value        
-
-    @property
-    def entitlements(self) -> Entitlements:
-        """Entitlements for a content piece"""
-        return self.__entitlements
-
-    @entitlements.setter
-    def entitlements(self, value: Entitlements):
-        self._property_changed('entitlements')
-        self.__entitlements = value        
-
-    @property
-    def content(self) -> Content:
-        """Body of the content piece"""
-        return self.__content
-
-    @content.setter
-    def content(self, value: Content):
-        self._property_changed('content')
-        self.__content = value        
-
-    @property
-    def parameters(self) -> ContentParameters:
-        """Parameters of the content piece"""
-        return self.__parameters
-
-    @parameters.setter
-    def parameters(self, value: ContentParameters):
-        self._property_changed('parameters')
-        self.__parameters = value        
+    name: str = field(default=None, metadata=field_metadata)
+    entitlements: Entitlements = field(default=None, metadata=field_metadata)
+    entitlement_exclusions: EntitlementExclusions = field(default=None, metadata=field_metadata)
+    content: Content = field(default=None, metadata=field_metadata)
+    parameters: ContentParameters = field(default=None, metadata=field_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentCreateResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: ContentAuditFields = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> ContentAuditFields:
-        return self.__data
-
-    @data.setter
-    def data(self, value: ContentAuditFields):
-        self._property_changed('data')
-        self.__data = value        
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[ContentAuditFields] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)
 
 
+@handle_camel_case_args
+@dataclass_json(letter_case=LetterCase.CAMEL)
+@dataclass(unsafe_hash=True, repr=False)
 class ContentUpdateResponse(Base):
-        
-    @camel_case_translate
-    def __init__(
-        self,
-        status: int = None,
-        message: str = None,
-        data: ContentAuditFields = None,
-        name: str = None
-    ):        
-        super().__init__()
-        self.status = status
-        self.message = message
-        self.data = data
-        self.name = name
-
-    @property
-    def status(self) -> int:
-        """HTTP Status Code"""
-        return self.__status
-
-    @status.setter
-    def status(self, value: int):
-        self._property_changed('status')
-        self.__status = value        
-
-    @property
-    def message(self) -> str:
-        """Field to store any informational message / error returned by the server"""
-        return self.__message
-
-    @message.setter
-    def message(self, value: str):
-        self._property_changed('message')
-        self.__message = value        
-
-    @property
-    def data(self) -> ContentAuditFields:
-        return self.__data
-
-    @data.setter
-    def data(self, value: ContentAuditFields):
-        self._property_changed('data')
-        self.__data = value        
+    status: Optional[int] = field(default=None, metadata=field_metadata)
+    message: Optional[str] = field(default=None, metadata=field_metadata)
+    data: Optional[ContentAuditFields] = field(default=None, metadata=field_metadata)
+    name: Optional[str] = field(default=None, metadata=name_metadata)

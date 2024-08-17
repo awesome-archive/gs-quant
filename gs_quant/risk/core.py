@@ -13,98 +13,429 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
+import datetime as dt
+import itertools
+from abc import ABCMeta, abstractmethod
 from concurrent.futures import Future
 from copy import copy
-from typing import Iterable, List, Optional, Tuple, Union
+from dataclasses import dataclass, fields
+from typing import Iterable, Optional, Union, Tuple, Dict
 
-import dateutil
 import pandas as pd
+from dataclasses_json import dataclass_json
 
-from gs_quant.common import AssetClass
+import gs_quant
+from gs_quant.base import RiskKey
+from gs_quant.config import DisplayOptions
 from gs_quant.datetime import point_sort_order
-from gs_quant.markets.core import PricingContext
-from gs_quant.markets.historical import HistoricalPricingContext
-from gs_quant.target.risk import RiskMeasure, RiskMeasureType, RiskMeasureUnit
 
 __column_sort_fns = {
     'label1': point_sort_order,
     'mkt_point': point_sort_order,
     'point': point_sort_order
 }
-__risk_columns = ('date', 'time', 'marketDataType', 'assetId', 'pointClass', 'point')
-__crif_columns = ('date', 'time', 'riskType', 'amountCurrency', 'qualifier', 'bucket', 'label1', 'label2')
+__risk_columns = ('date', 'time', 'mkt_type', 'mkt_asset', 'mkt_class', 'mkt_point')
 
 
-def sum_formatter(result: List) -> float:
-    return sum(r.get('value', result[0].get('Val')) for r in result)
+class ResultInfo(metaclass=ABCMeta):
 
+    def __init__(
+            self,
+            risk_key: RiskKey,
+            unit: Optional[dict] = None,
+            error: Optional[Union[str, dict]] = None,
+            request_id: Optional[str] = None
+    ):
+        self.__risk_key = risk_key
+        self.__unit = unit
+        self.__error = error
+        self.__request_id = request_id
 
-def __flatten_result(item: Union[List, Tuple]):
-    rows = []
-    for elem in item:
-        if isinstance(elem, (list, tuple)):
-            rows.extend(__flatten_result(elem))
-        else:
-            excluded_fields = ['calculationTime', 'queueingTime']
-            if not issubclass(PricingContext.current.__class__, HistoricalPricingContext):
-                excluded_fields.append('date')
+    @property
+    @abstractmethod
+    def raw_value(self):
+        ...
+
+    @property
+    def risk_key(self) -> RiskKey:
+        return self.__risk_key
+
+    @property
+    def unit(self) -> dict:
+        """The units of this result"""
+        return self.__unit
+
+    @property
+    def error(self) -> Union[str, dict]:
+        """Any error associated with this result"""
+        return self.__error
+
+    @property
+    def request_id(self) -> Optional[str]:
+        """The request Id associated with this result"""
+        return self.__request_id
+
+    @staticmethod
+    def composition_info(components: Iterable):
+        from gs_quant.markets.markets import historical_risk_key
+
+        dates = []
+        values = []
+        errors = {}
+        risk_key = None
+        unit = None
+
+        for component in components:
+            date = component.risk_key.date
+            risk_key = historical_risk_key(component.risk_key) if risk_key is None else risk_key
+
+            if risk_key.market.location != component.risk_key.market.location:
+                raise ValueError('Cannot compose results with different markets')
+
+            if isinstance(component, (ErrorValue, Exception)):
+                errors[date] = component
             else:
-                date = elem.get('date')
-                if date is not None:
-                    elem['date'] = dateutil.parser.isoparse(date).date()
+                values.append(component.raw_value)
+                dates.append(date)
+                unit = unit or component.unit
 
-            for field in excluded_fields:
-                if field in elem:
-                    elem.pop(field)
-
-            rows.append(elem)
-
-    return rows
+        return dates, values, errors, risk_key, unit
 
 
-def scalar_formatter(result: List) -> Optional[Union[float, pd.Series]]:
-    if not result:
+class ErrorValue(ResultInfo):
+
+    def __init__(self, risk_key: RiskKey, error: Union[str, dict], request_id: Optional[str] = None):
+        super().__init__(risk_key, error=error, request_id=request_id)
+
+    def __repr__(self):
+        return self.error
+
+    def __getattr__(self, item):
+        # only called if self.item doesn't exist
+        raise AttributeError(f'ErrorValue object has no attribute {item}.  Error was {self.error}')
+
+    @property
+    def raw_value(self):
         return None
 
-    result = __flatten_result(result)
-
-    if len(result) > 1 and 'date' in result[0]:
-        series = pd.Series(
-            data=[r.get('value', r.get('Val')) for r in result],
-            index=[r['date'] for r in result]
-        )
-        return series.sort_index()
-    else:
-        return result[0].get('value', result[0].get('Val'))
+    def _to_records(self, extra_dict, display_options: DisplayOptions = None):
+        return [{**extra_dict, 'value': self}]
 
 
-def structured_formatter(result: List) -> Optional[pd.DataFrame]:
-    if not result:
-        return None
+class UnsupportedValue(ResultInfo):
 
-    return sort_risk(pd.DataFrame.from_records(__flatten_result(result)))
+    def __init__(self, risk_key: RiskKey, request_id: Optional[str] = None):
+        super().__init__(risk_key, request_id=request_id)
+
+    def __repr__(self):
+        return 'Unsupported Value'
+
+    @property
+    def raw_value(self):
+        return 'Unsupported Value'
+
+    def _to_records(self, extra_dict, display_options: DisplayOptions = None):
+        if display_options is not None and not isinstance(display_options, DisplayOptions):
+            raise TypeError("display_options must be of type DisplayOptions")
+
+        options = display_options if display_options is not None else gs_quant.config.display_options
+        show_na = options.show_na
+
+        return [{**extra_dict, 'value': self}] if show_na else []
 
 
-def crif_formatter(result: List) -> Optional[pd.DataFrame]:
-    if not result:
-        return None
+class ScalarWithInfo(ResultInfo, metaclass=ABCMeta):
 
-    return sort_risk(pd.DataFrame.from_records(__flatten_result(result)), __crif_columns)
+    def __init__(self,
+                 risk_key: RiskKey,
+                 value: Union[float, str],
+                 unit: Optional[dict] = None,
+                 error: Optional[Union[str, dict]] = None,
+                 request_id: Optional[str] = None):
+        float.__init__(value)
+        ResultInfo.__init__(self, risk_key, unit=unit, error=error, request_id=request_id)
+
+    @property
+    @abstractmethod
+    def raw_value(self):
+        ...
+
+    @staticmethod
+    def compose(components: Iterable):
+        dates, values, errors, risk_key, unit = ResultInfo.composition_info(components)
+        return SeriesWithInfo(pd.Series(index=pd.DatetimeIndex(dates).date, data=values),
+                              risk_key=risk_key,
+                              unit=unit,
+                              error=errors)
+
+    def _to_records(self, extra_dict, display_options: DisplayOptions = None):
+        return [{**extra_dict, 'value': self}]
 
 
-def aggregate_risk(results: Iterable[Union[pd.DataFrame, Future]], threshold: Optional[float] = None) -> pd.DataFrame:
+class FloatWithInfo(ScalarWithInfo, float):
+
+    def __new__(cls,
+                risk_key: RiskKey,
+                value: Union[float, str],
+                unit: dict = None,
+                error: Optional[str] = None,
+                request_id: Optional[str] = None):
+        return float.__new__(cls, value)
+
+    @property
+    def raw_value(self) -> float:
+        return float(self)
+
+    def __repr__(self):
+
+        return self.error if self.error else float.__repr__(self)
+
+    def __add__(self, other):
+        if isinstance(other, FloatWithInfo):
+            if self.unit == other.unit:
+                return FloatWithInfo(combine_risk_key(self.risk_key, other.risk_key), self.raw_value + other.raw_value,
+                                     self.unit)
+            else:
+                raise ValueError('FloatWithInfo unit mismatch')
+        return super(FloatWithInfo, self).__add__(other)
+
+    def __mul__(self, other):
+        if isinstance(other, FloatWithInfo):
+            return FloatWithInfo(combine_risk_key(self.risk_key, other.risk_key), self.raw_value * other.raw_value,
+                                 self.unit)
+        else:
+            return FloatWithInfo(self.risk_key, self.raw_value * other, self.unit)
+
+    def to_frame(self):
+        return self
+
+
+class StringWithInfo(ScalarWithInfo, str):
+
+    def __new__(cls,
+                risk_key: RiskKey,
+                value: Union[float, str],
+                unit: Optional[dict] = None,
+                error: Optional[str] = None,
+                request_id: Optional[str] = None):
+        return str.__new__(cls, value)
+
+    @property
+    def raw_value(self) -> str:
+        return str(self)
+
+    def __repr__(self):
+        return self.error if self.error else str.__repr__(self)
+
+
+class SeriesWithInfo(pd.Series, ResultInfo):
+    _internal_names = pd.DataFrame._internal_names + \
+                      ['_ResultInfo__' + i for i in dir(ResultInfo) if isinstance(getattr(ResultInfo, i), property)]
+    _internal_names_set = set(_internal_names)
+
+    def __init__(
+            self,
+            *args,
+            risk_key: Optional[RiskKey] = None,
+            unit: Optional[dict] = None,
+            error: Optional[Union[str, dict]] = None,
+            request_id: Optional[str] = None,
+            **kwargs
+    ):
+        pd.Series.__init__(self, *args, **kwargs)
+        ResultInfo.__init__(self, risk_key, unit=unit, error=error, request_id=request_id)
+
+    def __repr__(self):
+        if self.error:
+            return pd.Series.__repr__(self) + "\nErrors: " + str(self.error)
+        return pd.Series.__repr__(self)
+
+    @property
+    def _constructor(self):
+        return SeriesWithInfo
+
+    @property
+    def _constructor_expanddim(self):
+        return DataFrameWithInfo
+
+    @property
+    def raw_value(self) -> pd.Series:
+        return pd.Series(self)
+
+    @staticmethod
+    def compose(components: Iterable):
+        dates, values, errors, risk_key, unit = ResultInfo.composition_info(components)
+        return SeriesWithInfo(pd.Series(index=pd.DatetimeIndex(dates).date, data=values),
+                              risk_key=risk_key,
+                              unit=unit,
+                              error=errors)
+
+    def _to_records(self, extra_dict, display_options: DisplayOptions = None):
+        df = pd.DataFrame(self).reset_index()
+        df.columns = ['dates', 'value']
+        records = df.to_dict('records')
+        records = [dict(item, **{**extra_dict}) for item in records]
+        return records
+
+    def __mul__(self, other):
+        new_result = pd.Series.__mul__(self, other)
+        ResultInfo.__init__(new_result, risk_key=self.risk_key, unit=self.unit, error=self.error,
+                            request_id=self.request_id)
+        return new_result
+
+    def copy_with_resultinfo(self, deep=True):
+        return SeriesWithInfo(self.raw_value.copy(deep=deep), risk_key=self.risk_key, unit=self.unit, error=self.error,
+                              request_id=self.request_id)
+
+
+class DataFrameWithInfo(pd.DataFrame, ResultInfo):
+    _internal_names = pd.DataFrame._internal_names + \
+                      ['_ResultInfo__' + i for i in dir(ResultInfo) if isinstance(getattr(ResultInfo, i), property)]
+    _internal_names_set = set(_internal_names)
+
+    def __init__(
+            self,
+            *args,
+            risk_key: Optional[RiskKey] = None,
+            unit: Optional[dict] = None,
+            error: Optional[Union[str, dict]] = None,
+            request_id: Optional[str] = None,
+            **kwargs
+    ):
+        pd.DataFrame.__init__(self, *args, **kwargs)
+        ResultInfo.__init__(self, risk_key, unit=unit, error=error, request_id=request_id)
+
+    def __repr__(self):
+        if self.error:
+            return pd.DataFrame.__repr__(self) + "\nErrors: " + str(self.errors)
+        return pd.DataFrame.__repr__(self)
+
+    @property
+    def _constructor(self):
+        return DataFrameWithInfo
+
+    @property
+    def _constructor_sliced(self):
+        return SeriesWithInfo
+
+    @property
+    def raw_value(self) -> pd.DataFrame:
+        if self.empty:
+            return pd.DataFrame(self)
+        df = self.copy()
+        if isinstance(self.index.values[0], dt.date):
+            df.index.name = 'dates'
+            df.reset_index(inplace=True)
+        return pd.DataFrame(df)
+
+    @staticmethod
+    def compose(components: Iterable):
+        dates, values, errors, risk_key, unit = ResultInfo.composition_info(components)
+        df = pd.concat(v.assign(date=d) for d, v in zip(dates, values)).set_index('date')
+
+        return DataFrameWithInfo(df, risk_key=risk_key, unit=unit, error=errors)
+
+    def to_frame(self):
+        return self
+
+    def _to_records(self, extra_dict, display_options: DisplayOptions = None):
+
+        if self.empty:
+            if display_options is not None and not isinstance(display_options, DisplayOptions):
+                raise TypeError("display_options must be of type DisplayOptions")
+
+            options = display_options if display_options is not None else gs_quant.config.display_options
+            show_na = options.show_na
+
+            return [{**extra_dict, 'value': None}] if show_na else []
+
+        return [dict(item, **{**extra_dict}) for item in self.raw_value.to_dict('records')]
+
+    def copy_with_resultinfo(self, deep=True):
+        return DataFrameWithInfo(self.raw_value.copy(deep=deep), risk_key=self.risk_key, unit=self.unit,
+                                 error=self.error, request_id=self.request_id)
+
+    def filter_by_coord(self, coordinate):
+        from gs_quant.markets import MarketDataCoordinate
+        df = self.copy_with_resultinfo()
+        for att in [i.name for i in fields(MarketDataCoordinate)]:
+            if getattr(coordinate, att) is not None:
+                if isinstance(getattr(coordinate, att), str):
+                    df = df[getattr(df, att) == getattr(coordinate, att)]
+                else:
+                    df = df[getattr(df, att).isin(getattr(coordinate, att))]
+        return df
+
+
+@dataclass_json
+@dataclass
+class MQVSValidationTarget:
+    env: Optional[str] = None
+    operator: Optional[str] = None
+    mqGroups: Optional[Tuple[str, ...]] = None
+    users: Optional[Tuple[str, ...]] = None
+    assetClasses: Optional[Tuple[str, ...]] = None
+    assets: Optional[Tuple[str, ...]] = None
+    legTypes: Optional[Tuple[str, ...]] = None
+    legFields: Optional[Dict[str, str]] = None
+
+
+@dataclass_json
+@dataclass
+class MQVSValidatorDefn:
+    validatorType: str
+    targets: Tuple[MQVSValidationTarget, ...]
+    args: Dict[str, str]
+    groupId: Optional[str] = None
+    groupIndex: Optional[int] = None
+    groupMethod: Optional[str] = None
+
+
+class MQVSValidatorDefnsWithInfo(ResultInfo):
+    validators: Tuple[MQVSValidatorDefn, ...]
+
+    def __init__(self,
+                 risk_key: RiskKey,
+                 value: Union[MQVSValidatorDefn, Tuple[MQVSValidatorDefn, ...]],
+                 unit: Optional[dict] = None,
+                 error: Optional[Union[str, dict]] = None,
+                 request_id: Optional[str] = None):
+        ResultInfo.__init__(self, risk_key, unit=unit, error=error, request_id=request_id)
+        if value and isinstance(value, tuple):
+            self.validators = value
+        elif value and isinstance(value, MQVSValidatorDefn):
+            self.validators = tuple([value])
+
+    @property
+    def raw_value(self):
+        return self.validators
+
+
+def aggregate_risk(results: Iterable[Union[DataFrameWithInfo, Future]],
+                   threshold: Optional[float] = None,
+                   allow_heterogeneous_types: bool = False) \
+        -> pd.DataFrame:
     """
-    Combine the results of multiple Instrument.calc() calls, into a single result
+    Combine the results of multiple InstrumentBase.calc() calls, into a single result
 
-    :param results: An iterable of Dataframes and/or Futures (returned by Instrument.calc())
+    :param results: An iterable of Dataframes and/or Futures (returned by InstrumentBase.calc())
     :param threshold: exclude values whose absolute value falls below this threshold
+    :param allow_heterogeneous_types: allow Series to be converted to DataFrames before aggregating
     :return: A Dataframe with the aggregated results
 
     **Examples**
 
+    >>> from gs_quant.instrument import IRCap, IRFloor
+    >>> from gs_quant.markets import PricingContext
+    >>> from gs_quant.risk import IRDelta, IRVega
+    >>>
+    >>> cap = IRCap('5y', 'GBP')
+    >>> floor = IRFloor('5y', 'GBP')
+    >>> instruments = (cap, floor)
+    >>>
     >>> with PricingContext():
-    >>>     delta_f = [inst.calc(risk.IRDelta) for inst in instruments]
-    >>>     vega_f = [inst.calc(risk.IRVega) for inst in instruments]
+    >>>     delta_f = [inst.calc(IRDelta) for inst in instruments]
+    >>>     vega_f = [inst.calc(IRVega) for inst in (cap, floor)]
     >>>
     >>> delta = aggregate_risk(delta_f, threshold=0.1)
     >>> vega = aggregate_risk(vega_f)
@@ -112,10 +443,17 @@ def aggregate_risk(results: Iterable[Union[pd.DataFrame, Future]], threshold: Op
     delta_f and vega_f are lists of futures, where the result will be a Dataframe
     delta and vega are Dataframes, representing the merged risk of the individual instruments
     """
-    dfs = [r.result() if isinstance(r, Future) else r for r in results]
-    result = pd.concat(dfs)
-    result = result.groupby([c for c in result.columns if c != 'value']).sum()
-    result = pd.DataFrame.from_records(result.to_records())
+
+    def get_df(result_obj):
+        if isinstance(result_obj, Future):
+            result_obj = result_obj.result()
+        if isinstance(result_obj, pd.Series) and allow_heterogeneous_types:
+            return pd.DataFrame(result_obj.raw_value).T
+        return result_obj.raw_value
+
+    dfs = [get_df(r) for r in results]
+    result = pd.concat(dfs).fillna(0)
+    result = result.groupby([c for c in result.columns if c != 'value'], as_index=False).sum()
 
     if threshold is not None:
         result = result[result.value.abs() > threshold]
@@ -123,24 +461,54 @@ def aggregate_risk(results: Iterable[Union[pd.DataFrame, Future]], threshold: Op
     return sort_risk(result)
 
 
-def aggregate_results(results: Iterable[Union[dict, float, str, pd.DataFrame, pd.Series]])\
-        -> Union[dict, float, str, pd.DataFrame, pd.Series]:
-    types = set(type(r) for r in results)
-    if str in types:
-        return next(r for r in results if isinstance(r, str))
-    elif len(types) > 1:
-        raise RuntimeError('Cannot aggregate heterogeneous types: {}'.format(tuple(types)))
+ResultType = Union[None, dict, tuple, DataFrameWithInfo, FloatWithInfo, SeriesWithInfo]
+
+
+def aggregate_results(results: Iterable[ResultType], allow_mismatch_risk_keys=False,
+                      allow_heterogeneous_types=False) -> ResultType:
+    unit = None
+    risk_key = None
+    results = tuple(results)
+
+    if not len(results):
+        return None
+
+    for result in results:
+        if isinstance(result, Exception):
+            raise Exception
+
+        if result.error:
+            raise ValueError('Cannot aggregate results in error')
+
+        if not allow_heterogeneous_types and not isinstance(result, type(results[0])):
+            raise ValueError(f'Cannot aggregate heterogeneous types: {type(result)} vs {type(results[0])}')
+
+        if result.unit:
+            if unit and unit != result.unit:
+                raise ValueError('Cannot aggregate results with different units')
+
+            unit = unit or result.unit
+
+        if not allow_mismatch_risk_keys and risk_key and risk_key.ex_historical_diddle != result.risk_key.ex_historical_diddle:
+            raise ValueError('Cannot aggregate results with different pricing keys')
+
+        risk_key = risk_key or result.risk_key
 
     inst = next(iter(results))
     if isinstance(inst, dict):
         return dict((k, aggregate_results([r[k] for r in results])) for k in inst.keys())
-    elif isinstance(inst, (float, pd.Series)):
-        return sum(results)
-    elif isinstance(inst, pd.DataFrame):
-        return aggregate_risk(results)
+    elif isinstance(inst, tuple):
+        return tuple(set(itertools.chain.from_iterable(results)))
+    elif isinstance(inst, FloatWithInfo):
+        return FloatWithInfo(risk_key, sum(results), unit=unit)
+    elif isinstance(inst, SeriesWithInfo):
+        return SeriesWithInfo(sum(results), risk_key=risk_key, unit=unit)
+    elif isinstance(inst, DataFrameWithInfo):
+        return DataFrameWithInfo(aggregate_risk(results, allow_heterogeneous_types=allow_heterogeneous_types),
+                                 risk_key=risk_key, unit=unit)
 
 
-def subtract_risk(left: pd.DataFrame, right: pd.DataFrame) -> pd.DataFrame:
+def subtract_risk(left: DataFrameWithInfo, right: DataFrameWithInfo) -> pd.DataFrame:
     """Subtract bucketed risk. Dimensions must be identical
 
     :param left: Results to substract from
@@ -148,21 +516,39 @@ def subtract_risk(left: pd.DataFrame, right: pd.DataFrame) -> pd.DataFrame:
 
     **Examples**
 
-    >>> ir_swap = IRSwap('Pay', '10y', 'USD')
-    >>> delta_today = ir_swap.calc(risk.IRDelta)
+    >>> from gs_quant.datetime.date import business_day_offset
+    >>> from gs_quant.instrument IRSwap
+    >>> from gs_quant.markets import PricingContext
+    >>> from gs_quant.risk import IRDelta
+    >>> import datetime as dt
     >>>
-    >>> with PricingContext(pricing_date=business_day_offset(datetime.date.today(), -1, roll='preceding')):
-    >>>     delta_yday_f = ir_swap.calc(risk.IRDelta)
+    >>> ir_swap = IRSwap('Pay', '10y', 'USD')
+    >>> delta_today = ir_swap.calc(IRDelta)
+    >>>
+    >>> with PricingContext(pricing_date=business_day_offset(dt.date.today(), -1, roll='preceding')):
+    >>>     delta_yday_f = ir_swap.calc(IRDelta)
     >>>
     >>> delta_diff = subtract_risk(delta_today, delta_yday_f.result())
     """
-    assert(left.columns.names == right.columns.names)
-    assert('value' in left.columns.names)
+    assert (left.columns.names == right.columns.names)
+    assert ('value' in left.columns.names)
 
     right_negated = copy(right)
     right_negated.value *= -1
 
     return aggregate_risk((left, right_negated))
+
+
+def sort_values(data: Iterable, columns: Tuple[str, ...], by: Tuple[str, ...]) -> Iterable:
+    indices = tuple(columns.index(c) for c in by if c in columns)
+    fns = [None] * len(columns)
+    for idx in indices:
+        fns[idx] = __column_sort_fns.get(columns[idx])
+
+    def cmp(row) -> tuple:
+        return tuple((fns[i](row[i]) or 0) if fns[i] else row[i] for i in indices)
+
+    return sorted(data, key=cmp)
 
 
 def sort_risk(df: pd.DataFrame, by: Tuple[str, ...] = __risk_columns) -> pd.DataFrame:
@@ -174,13 +560,7 @@ def sort_risk(df: pd.DataFrame, by: Tuple[str, ...] = __risk_columns) -> pd.Data
     :return: A sorted Dataframe
     """
     columns = tuple(df.columns)
-    indices = [columns.index(c) if c in columns else -1 for c in by]
-    fns = [__column_sort_fns.get(c) for c in columns]
-
-    def cmp(row) -> tuple:
-        return tuple(fns[i](row[i]) if fns[i] else row[i] for i in indices if i != -1)
-
-    data = sorted((tuple(r)[1:] for r in df.to_records()), key=cmp)
+    data = sort_values((row for _, row in df.iterrows()), columns, by)
     fields = [f for f in by if f in columns]
     fields.extend(f for f in columns if f not in fields)
 
@@ -191,186 +571,16 @@ def sort_risk(df: pd.DataFrame, by: Tuple[str, ...] = __risk_columns) -> pd.Data
     return result
 
 
-def __risk_measure_with_doc_string(
-    name: str,
-    doc: str,
-    measure_type: RiskMeasureType,
-    asset_class: Optional[AssetClass] = None,
-    unit: Optional[RiskMeasureUnit] = None
-) -> RiskMeasure:
-    measure = RiskMeasure(measure_type=measure_type, asset_class=asset_class, unit=unit, name=name)
-    measure.__doc__ = doc
-    return measure
+def combine_risk_key(key_1: RiskKey, key_2: RiskKey) -> RiskKey:
+    """
+    Combine two risk keys (key_1, key_2) into a new RiskKey
 
+    :type key_1: RiskKey
+    :type key_2: RiskKey
+    """
 
-DollarPrice = __risk_measure_with_doc_string('DollarPrice', 'Present value in USD', RiskMeasureType.Dollar_Price)
-Price = __risk_measure_with_doc_string('Price', 'Present value in local currency', RiskMeasureType.PV)
-ForwardPrice = __risk_measure_with_doc_string(
-    'ForwardPrice',
-    'Forward price',
-    RiskMeasureType.Forward_Price,
-    unit=RiskMeasureUnit.BPS)
-Theta = __risk_measure_with_doc_string('Theta', '1 day Theta', RiskMeasureType.Theta)
-EqDelta = __risk_measure_with_doc_string(
-    'EqDelta',
-    'Equity Delta',
-    RiskMeasureType.Delta,
-    asset_class=AssetClass.Equity)
-EqGamma = __risk_measure_with_doc_string(
-    'EqGamma',
-    'Equity Gamma',
-    RiskMeasureType.Gamma,
-    asset_class=AssetClass.Equity)
-EqVega = __risk_measure_with_doc_string('EqVega', 'Equity Vega', RiskMeasureType.Vega, asset_class=AssetClass.Equity)
-EqSpot = __risk_measure_with_doc_string(
-    'EqSpot',
-    'Equity Spot Level',
-    RiskMeasureType.Spot, asset_class=AssetClass.Equity)
-EqAnnualImpliedVol = __risk_measure_with_doc_string(
-    'EqAnnualImpliedVol',
-    'Equity Annual Implied Volatility (%)',
-    RiskMeasureType.Annual_Implied_Volatility,
-    asset_class=AssetClass.Equity,
-    unit=RiskMeasureUnit.Percent)
-CommodDelta = __risk_measure_with_doc_string(
-    'CommodDelta',
-    'Commodity Delta',
-    RiskMeasureType.Delta,
-    asset_class=AssetClass.Commod)
-CommodTheta = __risk_measure_with_doc_string(
-    'CommodTheta',
-    'Commodity Theta',
-    RiskMeasureType.Theta,
-    asset_class=AssetClass.Commod)
-CommodVega = __risk_measure_with_doc_string(
-    'CommodVega',
-    'Commodity Vega',
-    RiskMeasureType.Vega,
-    asset_class=AssetClass.Commod)
-FairVolStrike = __risk_measure_with_doc_string(
-    'FairVolStrike',
-    'Fair Volatility Strike Value of a Variance Swap',
-    RiskMeasureType.FairVolStrike)
-FairVarStrike = __risk_measure_with_doc_string(
-    'FairVarStrike',
-    'Fair Variance Strike Value of a Variance Swap',
-    RiskMeasureType.FairVarStrike)
-FXDelta = __risk_measure_with_doc_string('FXDelta', 'FX Delta', RiskMeasureType.Delta, asset_class=AssetClass.FX)
-FXGamma = __risk_measure_with_doc_string('FXGamma', 'FX Gamma', RiskMeasureType.Gamma, asset_class=AssetClass.FX)
-FXVega = __risk_measure_with_doc_string('FXVega', 'FX Vega', RiskMeasureType.Vega, asset_class=AssetClass.FX)
-FXSpot = __risk_measure_with_doc_string('FXSpot', 'FX Spot Rate', RiskMeasureType.Spot, asset_class=AssetClass.FX)
-IRDelta = __risk_measure_with_doc_string(
-    'IRDelta',
-    'Interest Rate Delta',
-    RiskMeasureType.Delta,
-    asset_class=AssetClass.Rates)
-IRDeltaParallel = __risk_measure_with_doc_string(
-    'IRDeltaParallel',
-    'Interest Rate Parallel Delta',
-    RiskMeasureType.ParallelDelta,
-    asset_class=AssetClass.Rates)
-IRDeltaLocalCcy = __risk_measure_with_doc_string(
-    'IRDeltaLocalCcy',
-    'Interest Rate Delta (Local Ccy)',
-    RiskMeasureType.DeltaLocalCcy,
-    asset_class=AssetClass.Rates)
-IRDeltaParallelLocalCcy = __risk_measure_with_doc_string(
-    'IRDeltaParallelLocalCcy',
-    'Interest Rate Parallel Delta (Local Ccy)',
-    RiskMeasureType.ParallelDeltaLocalCcy,
-    asset_class=AssetClass.Rates)
-IRGamma = __risk_measure_with_doc_string(
-    'IRGamma',
-    'Interest Rate Gamma',
-    RiskMeasureType.Gamma,
-    asset_class=AssetClass.Rates)
-IRVega = __risk_measure_with_doc_string(
-    'IRVega',
-    'Interest Rate Vega',
-    RiskMeasureType.Vega,
-    asset_class=AssetClass.Rates)
-IRVegaParallel = __risk_measure_with_doc_string(
-    'IRVegaParallel',
-    'Interest Rate Parallel Vega',
-    RiskMeasureType.ParallelVega,
-    asset_class=AssetClass.Rates)
-IRVegaLocalCcy = __risk_measure_with_doc_string(
-    'IRVegaLocalCcy',
-    'Interest Rate Vega (Local Ccy)',
-    RiskMeasureType.VegaLocalCcy,
-    asset_class=AssetClass.Rates)
-IRVegaParallelLocalCcy = __risk_measure_with_doc_string(
-    'IRVegaParallelLocalCcy',
-    'Interest Rate Parallel Vega (Local Ccy)',
-    RiskMeasureType.ParallelVegaLocalCcy,
-    asset_class=AssetClass.Rates)
-IRAnnualImpliedVol = __risk_measure_with_doc_string(
-    'IRAnnualImpliedVol',
-    'Interest Rate Annual Implied Volatility (%)',
-    RiskMeasureType.Annual_Implied_Volatility,
-    asset_class=AssetClass.Rates,
-    unit=RiskMeasureUnit.Percent)
-IRAnnualATMImpliedVol = __risk_measure_with_doc_string(
-    'IRAnnualATMImpliedVol',
-    'Interest Rate Annual Implied At-The-Money Volatility (%)',
-    RiskMeasureType.Annual_ATMF_Implied_Volatility,
-    asset_class=AssetClass.Rates,
-    unit=RiskMeasureUnit.Percent)
-IRDailyImpliedVol = __risk_measure_with_doc_string(
-    'IRDailyImpliedVol',
-    'Interest Rate Daily Implied Volatility (bps)',
-    RiskMeasureType.Annual_ATMF_Implied_Volatility,
-    asset_class=AssetClass.Rates,
-    unit=RiskMeasureUnit.BPS)
-IRSpotRate = __risk_measure_with_doc_string(
-    'IRSpotRate',
-    'At-The-Money Spot Rate (%)',
-    RiskMeasureType.Spot_Rate,
-    asset_class=AssetClass.Rates,
-    unit=RiskMeasureUnit.Percent)
-IRFwdRate = __risk_measure_with_doc_string(
-    'IRFwdRate',
-    'Par Rate (%)',
-    RiskMeasureType.Forward_Rate,
-    asset_class=AssetClass.Rates,
-    unit=RiskMeasureUnit.Percent)
-CRIFIRCurve = __risk_measure_with_doc_string(
-    'CRIFIRCurve',
-    'CRIF IR Curve',
-    RiskMeasureType.CRIF_IRCurve)
+    def get_field_value(field_name: str):
+        return getattr(key_1, field_name) if getattr(key_1, field_name) == getattr(key_2, field_name) else None
 
-Formatters = {
-    DollarPrice: scalar_formatter,
-    Price: scalar_formatter,
-    ForwardPrice: scalar_formatter,
-    Theta: scalar_formatter,
-    EqDelta: scalar_formatter,
-    EqGamma: scalar_formatter,
-    EqVega: sum_formatter,
-    EqSpot: scalar_formatter,
-    EqAnnualImpliedVol: scalar_formatter,
-    CommodDelta: scalar_formatter,
-    CommodVega: scalar_formatter,
-    CommodTheta: scalar_formatter,
-    FairVarStrike: scalar_formatter,
-    FairVolStrike: scalar_formatter,
-    FXDelta: structured_formatter,
-    FXGamma: structured_formatter,
-    FXVega: structured_formatter,
-    FXSpot: scalar_formatter,
-    IRDelta: structured_formatter,
-    IRDeltaParallel: scalar_formatter,
-    IRDeltaLocalCcy: structured_formatter,
-    IRDeltaParallelLocalCcy: scalar_formatter,
-    IRGamma: structured_formatter,
-    IRVega: structured_formatter,
-    IRVegaParallel: scalar_formatter,
-    IRVegaLocalCcy: structured_formatter,
-    IRVegaParallelLocalCcy: scalar_formatter,
-    IRAnnualImpliedVol: scalar_formatter,
-    IRDailyImpliedVol: scalar_formatter,
-    IRAnnualATMImpliedVol: scalar_formatter,
-    IRSpotRate: scalar_formatter,
-    IRFwdRate: scalar_formatter,
-    CRIFIRCurve: crif_formatter
-}
+    return RiskKey(get_field_value("provider"), get_field_value("date"), get_field_value("market"),
+                   get_field_value("params"), get_field_value("scenario"), get_field_value("risk_measure"))

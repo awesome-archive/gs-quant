@@ -14,8 +14,6 @@ specific language governing permissions and limitations
 under the License.
 """
 
-import inspect
-import re
 import types
 
 import pytest
@@ -36,12 +34,29 @@ dummy_series2 = pd.Series([2790.37, 2700.06, 2695.95, 2633.08, 2637.72, 2636.78,
 @pytest.fixture(scope='module')
 def ts_map():
     return {k: v for k, v in globals().items() if isinstance(v, types.FunctionType) and
-            (getattr(v, 'plot_function', False) or getattr(v, 'plot_measure', False))}
+            (hasattr(v, 'plot_function') or hasattr(v, 'plot_measure') or hasattr(v, 'plot_measure_entity'))}
 
 
 def test_have_docstrings(ts_map):
     for k, v in ts_map.items():
         assert v.__doc__
+
+
+def test_window_to_from_dict():
+    window = Window(w=1, r=2)
+    window_dict = window.as_dict()
+
+    assert window_dict['w'] == 1
+    assert window_dict['r'] == 2
+
+    window_dict = {
+        'w': 1,
+        'r': 2
+    }
+
+    window = Window.from_dict(window_dict)
+    assert window.w == 1
+    assert window.r == 2
 
 
 def test_docstrings(ts_map):
@@ -78,6 +93,31 @@ def test_annotations(ts_map):
             'specifies parameter types'
 
 
+def _check_measure_args(params, request_required, fn_name):
+    param = params.popitem()
+    name = param[1].name
+    if request_required:
+        assert name == 'request_id'
+    if request_required or name == 'request_id':
+        assert param[1].kind == inspect.Parameter.KEYWORD_ONLY
+        param = params.popitem()
+
+    assert param[1].name == 'real_time'
+    assert param[1].kind == inspect.Parameter.KEYWORD_ONLY
+    param = params.popitem()
+    assert param[1].name == 'source'
+    assert param[1].kind == inspect.Parameter.KEYWORD_ONLY
+
+    counter = 0
+    while len(params) > 0:
+        param = params.popitem()
+        assert param[1].kind == inspect.Parameter.POSITIONAL_OR_KEYWORD, f'wrong parameter type on {fn_name}'
+        if param[1].annotation == Asset:
+            counter += 1
+
+    assert counter < 2, 'no more than 1 extra asset parameter allowed'
+
+
 def test_measures(ts_map):
     for k, v in ts_map.items():
         if not hasattr(v, 'plot_measure'):
@@ -86,5 +126,21 @@ def test_measures(ts_map):
         param = params.popitem(last=False)
         assert param[1].name == 'asset'
         assert param[1].annotation == Asset
-        assert 'source' in params
-        assert 'real_time' in params
+        assert param[1].kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+        _check_measure_args(params, False, v.__name__)
+
+
+def test_measures_on_entities(ts_map):
+    for k, v in ts_map.items():
+        if not hasattr(v, 'plot_measure_entity'):
+            continue
+        params = inspect.signature(v).parameters.copy()
+        param = params.popitem(last=False)
+        assert param[1].name == f'{v.entity_type.value}_id'
+        assert param[1].annotation == str
+        assert param[1].kind == inspect.Parameter.POSITIONAL_OR_KEYWORD
+        _check_measure_args(params, True, v.__name__)
+
+
+if __name__ == '__main__':
+    pytest.main(args=[__file__])

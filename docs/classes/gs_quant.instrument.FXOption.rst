@@ -1,4 +1,4 @@
-FXOption
+﻿FXOption
 ========
 
 For methods of this class, see :doc:`gs_quant.base.Priceable`
@@ -13,30 +13,65 @@ For methods of this class, see :doc:`gs_quant.base.Priceable`
    
    
    
-   
-   .. autoattribute:: callAmount
-   
-   
-   .. autoattribute:: callCurrency
+   .. autoattribute:: buy_sell
    
    
-   .. autoattribute:: expirationDate
+   .. autoattribute:: expiration_date
    
    
-   .. autoattribute:: optionType
+   .. autoattribute:: expiration_time
+   
+   
+   .. autoattribute:: instrument_quantity
+   
+   
+   .. autoattribute:: method_of_settlement
+   
+   
+   .. autoattribute:: notional_amount
+   
+   
+   .. autoattribute:: notional_amount_in_other_currency
+   
+   
+   .. autoattribute:: notional_currency
+   
+   
+   .. autoattribute:: option_type
+   
+   
+   .. autoattribute:: pair
    
    
    .. autoattribute:: premium
    
    
-   .. autoattribute:: putAmount
+   .. autoattribute:: premium_currency
    
    
-   .. autoattribute:: putCurrency
+   .. autoattribute:: premium_payment_date
    
    
-   .. autoattribute:: strike
+   .. autoattribute:: provider
    
+   
+   .. autoattribute:: resolution_key
+   
+   
+   .. autoattribute:: settlement_currency
+   
+   
+   .. autoattribute:: settlement_date
+   
+   
+   .. autoattribute:: settlement_rate_option
+   
+   
+   .. autoattribute:: strike_price
+   
+   
+   
+   .. autoattribute:: unresolved
    
    
    

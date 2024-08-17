@@ -17,6 +17,7 @@
 
 
 import math
+from functools import reduce
 
 from .datetime import *
 from .helper import plot_function
@@ -466,7 +467,7 @@ def abs_(x: pd.Series) -> pd.Series:
 
     :math:`R_t = |X_t|`
 
-    Equivalent to :math:`R_t = \sqrt{X_t^2}`
+    Equivalent to :math:`R_t = sqrt{X_t^2}`
 
     **Examples**
 
@@ -554,6 +555,7 @@ def filter_(x: pd.Series, operator: Optional[FilterOperator] = None, value: Opti
     """
     Removes values where comparison with the operator and value combination results in true, defaults to removing
     missing values from the series
+
     :param x: timeseries
     :param operator: FilterOperator describing logic for value removal, e.g 'less_than'
     :param value: number indicating value(s) to remove from the series
@@ -606,3 +608,217 @@ def filter_(x: pd.Series, operator: Optional[FilterOperator] = None, value: Opti
             raise MqValueError('Unexpected operator: ' + operator)
         x = x.drop(x[remove].index)
     return x
+
+
+@plot_function
+def filter_dates(x: pd.Series, operator: Optional[FilterOperator] = None,
+                 dates: Union[List[date], date] = None) -> pd.Series:
+    """
+    Removes dates where comparison with the operator and dates combination results in true, defaults to removing
+    missing values from the series
+
+    :param x: timeseries
+    :param operator: FilterOperator describing logic for date removal, e.g 'less_than'
+    :param dates: date or list of dates to remove from the series
+    :return: timeseries with specified dates removed
+
+
+    **Usage**
+
+    Remove each date determined by operator and date from timeseries where that expression yields true
+
+    **Examples**
+
+    Remove today from time series
+
+    >>> prices = generate_series(100)
+    >>> filter_dates(prices, FilterOperator.EQUALS, date.today())
+
+    Remove dates before today from time series
+
+    >>> prices = generate_series(100)
+    >>> filter_dates(prices, FilterOperator.LESS, date.today())
+
+    """
+
+    if dates is None and operator is None:
+        x = x.dropna(axis=0, how='any')
+    elif dates is None:
+        raise MqValueError('No date is specified for the operator')
+    elif isinstance(dates, list) and operator not in [FilterOperator.EQUALS, FilterOperator.N_EQUALS]:
+        raise MqValueError('Operator does not work for list of dates')
+    else:
+        if operator == FilterOperator.EQUALS:
+            dates = dates if isinstance(dates, list) else [dates]
+            x = x.loc[~x.index.isin(dates)]
+        elif operator == FilterOperator.N_EQUALS:
+            dates = dates if isinstance(dates, list) else [dates]
+            x = x.loc[x.index.isin(dates)]
+        elif operator == FilterOperator.GREATER:
+            x = x.loc[x.index <= dates]
+        elif operator == FilterOperator.LESS:
+            x = x.loc[x.index >= dates]
+        elif operator == FilterOperator.L_EQUALS:
+            x = x.loc[x.index > dates]
+        elif operator == FilterOperator.G_EQUALS:
+            x = x.loc[x.index < dates]
+        else:
+            if not isinstance(operator, str):
+                operator = str(operator)
+            raise MqValueError('Unexpected operator: ' + operator)
+    return x
+
+
+def _sum_boolean_series(*series):
+    if not 2 <= len(series) <= 100:
+        raise MqValueError('expected between 2 and 100 arguments')
+
+    for s in series:
+        if not isinstance(s, pd.Series):
+            raise MqTypeError('all arguments must be series')
+        if not all(map(lambda a: a in (0, 1), s.values)):
+            raise MqValueError(f'cannot perform operation on series with value(s) other than 1 and 0: {s.values}')
+
+    current = series[0].add(series[1], fill_value=0)
+    for s in series[2:]:
+        current = current.add(s, fill_value=0)
+    return current
+
+
+@plot_function
+def and_(*series: pd.Series) -> pd.Series:
+    """
+    Logical "and" of two or more boolean series.
+
+    :param series: input series
+    :return: result series (of numeric type, with booleans represented as 1s and 0s)
+    """
+    s = _sum_boolean_series(*series)
+    return (s == len(series)).astype(int)
+
+
+@plot_function
+def or_(*series: pd.Series) -> pd.Series:
+    """
+    Logical "or" of two or more boolean series.
+
+    :param series: input series
+    :return: result series (of numeric type, with booleans represented as 1s and 0s)
+    """
+    s = _sum_boolean_series(*series)
+    return (s > 0).astype(int)
+
+
+@plot_function
+def not_(series: pd.Series) -> pd.Series:
+    """
+    Logical negation of a single boolean series.
+
+    :param series: single input series
+    :return: result series (of numeric type, with booleans represented as 1s and 0s)
+    """
+    if not all(map(lambda a: a in (0, 1), series.values)):
+        raise MqValueError(f'cannot negate series with value(s) other than 1 and 0: {series.values}')
+    return series.replace([0, 1], [1, 0])
+
+
+@plot_function
+def if_(flags: pd.Series, x: Union[pd.Series, float], y: Union[pd.Series, float]) -> pd.Series:
+    """
+    Returns a series s. For i in the index of flags, s[i] = x[i] if flags[i] == 1 else y[i].
+
+    :param flags: series of 1s and 0s
+    :param x: values to use when flag is 1
+    :param y: values to use when flag is 0
+    :return: result series
+
+    **Usage**
+
+    Returns a series based off the given conditional series. If the condition is true it shows the first series's value
+    else it shows the second series's value.
+
+    **PlotTool Example**
+
+    if(SPX.spot() > 4000, SPX.spot(), GSTHHVIP.spot())
+
+    The above expression would show SPX.spot() if the spot price is above 4000 else it shows GSTHHVIP.spot().
+
+    """
+    if not all(map(lambda a: a in (0, 1), flags.values)):
+        raise MqValueError(f'cannot perform "if" on series with value(s) other than 1 and 0: {flags.values}')
+
+    def ensure_series(s):
+        if isinstance(s, (float, int)):
+            return flags, pd.Series([s] * flags.shape[0], index=flags.index)
+        elif isinstance(s, pd.Series):
+            return flags.align(s)
+        else:
+            raise MqTypeError('expected a number or series')
+
+    x_flags, x = ensure_series(x)
+    y_flags, y = ensure_series(y)
+    return pd.concat([x[x_flags == 1], y[y_flags == 0]]).sort_index()
+
+
+@plot_function
+def weighted_sum(series: List[pd.Series], weights: list) -> pd.Series:
+    """
+    Calculate a weighted sum.
+
+    :param series: list of time series
+    :param weights: list of weights
+    :return: time series of weighted average
+
+    **Usage**
+
+    Calculate a weighted sum e.g. for a basket.
+
+    **Examples**
+
+    Generate price series and get a sum (weights 70%/30%).
+
+    >>> prices1 = generate_series(100)
+    >>> prices2 = generate_series(100)
+    >>> mybasket = weighted_sum([prices1, prices2], [0.7, 0.3])
+
+    **See also**
+
+    :func:`basket`
+    """
+    if not all(isinstance(x, pd.Series) for x in series):
+        raise MqTypeError("expected a list of time series")
+    if not all(isinstance(y, (float, int)) for y in weights):
+        raise MqTypeError("expected a list of number for weights")
+    if len(weights) != len(series):
+        raise MqValueError("must have one weight for each time series")
+
+    # for input series, get the intersection of their calendars
+    cal = pd.DatetimeIndex(
+        reduce(
+            np.intersect1d,
+            (
+                curve.index
+                for curve in series
+            ),
+        )
+    )
+
+    # reindex inputs and calculate
+    series = [s.reindex(cal) for s in series]
+    weights = [pd.Series(w, index=cal) for w in weights]
+    return sum(series[i] * weights[i] for i in range(len(series))) / sum(weights)
+
+
+@plot_function
+def geometrically_aggregate(series: pd.Series) -> pd.Series:
+    """
+    Geometrically aggregate a series.
+
+    :param series: list of time series
+    :return: time series of geometrically aggregated results
+
+    **Usage**
+
+    Used to aggregate daily returns when expressed as weights
+    """
+    return series.add(1).cumprod() - 1

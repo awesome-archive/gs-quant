@@ -14,7 +14,7 @@ specific language governing permissions and limitations
 under the License.
 """
 
-from gs_quant.api.gs.backtests import GsBacktestApi, Backtest, BacktestResult
+from gs_quant.api.gs.backtests import GsBacktestApi, Backtest
 from gs_quant.session import *
 from gs_quant.target.common import *
 
@@ -34,12 +34,12 @@ def test_get_many_backtests(mocker):
     )
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_get', return_value=mock_response)
 
     # run test
-    response = GsBacktestApi.get_backtests()
+    response = GsBacktestApi.get_many_backtests()
     GsSession.current._get.assert_called_with('/backtests?limit=100', cls=Backtest)
     assert response == expected_response
 
@@ -49,7 +49,7 @@ def test_get_backtest(mocker):
     mock_response = Backtest(id=id_1, assetClass="Commod", type="Basket", name='Example Backtest')
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_get', return_value=mock_response)
 
@@ -65,13 +65,13 @@ def test_create_backtest(mocker):
     backtest = Backtest(id=id_1, assetClass="Commod", type="Basket", name='Example Backtest')
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_post', return_value=backtest)
 
     # run test
     response = GsBacktestApi.create_backtest(backtest)
-    request_headers = {'Content-Type': 'application/json;charset=utf-8'}
+    request_headers = {'Content-Type': 'application/json;charset=utf-8', 'Accept': 'application/json;charset=utf-8'}
     GsSession.current._post.assert_called_with('/backtests', backtest, request_headers=request_headers, cls=Backtest)
     assert response == backtest
 
@@ -82,13 +82,13 @@ def test_update_backtest(mocker):
     backtest = Backtest(id=id_1, assetClass="Commod", type="Basket", name='Example Backtest')
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_put', return_value=backtest)
 
     # run test
     response = GsBacktestApi.update_backtest(backtest)
-    request_headers = {'Content-Type': 'application/json;charset=utf-8'}
+    request_headers = {'Content-Type': 'application/json;charset=utf-8', 'Accept': 'application/json;charset=utf-8'}
     GsSession.current._put.assert_called_with('/backtests/{id}'.format(id=id_1), backtest,
                                               request_headers=request_headers, cls=Backtest)
     assert response == backtest
@@ -100,7 +100,7 @@ def test_delete_backtest(mocker):
     mock_response = "Successfully deleted backtest."
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_delete', return_value=mock_response)
 
@@ -110,41 +110,13 @@ def test_delete_backtest(mocker):
     assert response == mock_response
 
 
-def test_get_backtest_results(mocker):
-    id_1 = 'BT1'
-
-    mock_response = {'backtestResults': (
-        BacktestResult('BT1', performance=(
-            FieldValueMap(date='2019-02-18', price=100),
-            FieldValueMap(date='2019-02-19', price=99),
-        ), stats=None, history=(), backtestVersion=1)
-    )}
-
-    expected_response = BacktestResult('BT1', performance=(
-        FieldValueMap(date='2019-02-18', price=100),
-        FieldValueMap(date='2019-02-19', price=99),
-    ), stats=None, history=(), backtestVersion=1)
-
-    # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
-                        return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
-    mocker.patch.object(GsSession.current, '_get', return_value=mock_response)
-
-    # run test
-    response = GsBacktestApi.get_results(backtest_id=id_1)
-
-    GsSession.current._get.assert_called_with('/backtests/results?id={id}'.format(id=id_1))
-
-    assert response == expected_response
-
-
 def test_schedule_backtest(mocker):
     id_1 = 'BT1'
 
     mock_response = "Successfully scheduled backtest."
 
     # mock GsSession
-    mocker.patch.object(GsSession.__class__, 'current',
+    mocker.patch.object(GsSession.__class__, 'default_value',
                         return_value=GsSession.get(Environment.QA, 'client_id', 'secret'))
     mocker.patch.object(GsSession.current, '_post', return_value=mock_response)
 

@@ -15,6 +15,10 @@
 # should be fully documented: docstrings should describe parameters and the return value, and provide a 1-line
 # description. Type annotations should be provided for parameters.
 
+from gs_quant.api.gs.data import GsDataApi
+from gs_quant.markets.securities import Asset
+from gs_quant.target.common import Currency
+from .analysis import LagMode, lag
 from .statistics import *
 from ..errors import *
 
@@ -33,26 +37,207 @@ class AnnualizationFactor(IntEnum):
     ANNUALLY = 1
 
 
+class SharpeAssets(Enum):
+    USD = 'MAP35DA6K5B1YXGX'
+    AUD = 'MAFRZWJ790MQY0EW'
+    CHF = 'MAS0NN4ZX7NYXB36'
+    EUR = 'MA95W0N1214395N8'
+    GBP = 'MA41ZEFTWR8Q7HBM'
+    JPY = 'MA8GXV3SJ0TXH1JV'
+    SEK = 'MAGNZZY0GJ4TATNG'
+
+
+def excess_returns_pure(price_series: pd.Series, spot_curve: pd.Series) -> pd.Series:
+    curve, bench_curve = align(price_series, spot_curve, Interpolate.INTERSECT)
+
+    e_returns = [curve.iloc[0]]
+    for i in range(1, len(curve)):
+        multiplier = 1 + curve.iloc[i] / curve.iloc[i - 1] - bench_curve.iloc[i] / bench_curve.iloc[i - 1]
+        e_returns.append(e_returns[-1] * multiplier)
+    return pd.Series(e_returns, index=curve.index)
+
+
+def excess_returns(price_series: pd.Series, benchmark_or_rate: Union[Asset, Currency, float], *,
+                   day_count_convention=DayCountConvention.ACTUAL_360) -> pd.Series:
+    if isinstance(benchmark_or_rate, float):
+        er = [price_series.iloc[0]]
+        for j in range(1, len(price_series)):
+            fraction = day_count_fraction(price_series.index[j - 1], price_series.index[j], day_count_convention)
+            er.append(er[-1] + price_series.iloc[j] - price_series.iloc[j - 1] * (1 + benchmark_or_rate * fraction))
+        return pd.Series(er, index=price_series.index)
+
+    if isinstance(benchmark_or_rate, Currency):
+        try:
+            marquee_id = SharpeAssets[benchmark_or_rate.value].value
+        except KeyError:
+            raise MqValueError(f"unsupported currency {benchmark_or_rate}")
+    else:
+        marquee_id = benchmark_or_rate.get_marquee_id()
+
+    with DataContext(price_series.index[0], price_series.index[-1]):
+        q = GsDataApi.build_market_data_query([marquee_id], QueryType.SPOT)
+        df = GsDataApi.get_market_data(q)
+    if df.empty:
+        raise MqValueError(f'could not retrieve risk-free rate {marquee_id}')
+    df = df[~df.index.duplicated(keep='first')]  # handle bad data (duplicate rows)
+
+    return excess_returns_pure(price_series, df['spot'])
+
+
+def _annualized_return(levels: pd.Series, rolling: Union[int, pd.DateOffset],
+                       interpolation_method: Interpolate = Interpolate.NAN) -> pd.Series:
+    if isinstance(rolling, pd.DateOffset):
+        starting = [tstamp - rolling for tstamp in levels.index]
+        levels = interpolate(levels, method=interpolation_method)
+        points = list(
+            map(lambda d, v, i: pow(v / levels.get(i, np.nan),
+                                    365.25 / (d - i).days) - 1,
+                levels.index[1:],
+                levels.values[1:], starting[1:]))
+    else:
+        if interpolation_method is not Interpolate.NAN:
+            raise MqValueError(f'If w is not a relative date, method must be nan. You specified method: '
+                               f'{interpolation_method.value}.')
+        starting = [0] * rolling
+        starting.extend([a for a in range(1, len(levels) - rolling + 1)])
+        points = list(
+            map(lambda d, v, i: pow(v / levels.iloc[i], 365.25 / (d - levels.index[i]).days) - 1, levels.index[1:],
+                levels.values[1:], starting[1:]))
+    points.insert(0, 0)
+    return pd.Series(points, index=levels.index)
+
+
+def get_ratio_pure(er: pd.Series, w: Union[Window, int, str],
+                   interpolation_method: Interpolate = Interpolate.NAN) -> pd.Series:
+    w = normalize_window(er, w or None)  # continue to support 0 as an input for window
+    ann_return = _annualized_return(er, w.w, interpolation_method=interpolation_method)
+    long_enough = (er.index[-1] - w.w) >= er.index[0] if isinstance(w.w, pd.DateOffset) else w.w < len(er)
+    ann_vol = volatility(er, w).iloc[1:] if long_enough else volatility(er)
+    result = ann_return / ann_vol * 100
+    return apply_ramp(result, w)
+
+
+def _get_ratio(input_series: pd.Series, benchmark_or_rate: Union[Asset, float, str], w: Union[Window, int, str], *,
+               day_count_convention: DayCountConvention, curve_type: CurveType = CurveType.PRICES,
+               interpolation_method: Interpolate = Interpolate.NAN) -> pd.Series:
+    if curve_type == CurveType.PRICES:
+        er = excess_returns(input_series, benchmark_or_rate, day_count_convention=day_count_convention)
+    else:
+        assert curve_type == CurveType.EXCESS_RETURNS
+        er = input_series
+
+    return get_ratio_pure(er, w, interpolation_method)
+
+
+class RiskFreeRateCurrency(Enum):
+    USD = "USD"
+    AUD = "AUD"
+    CHF = "CHF"
+    EUR = "EUR"
+    GBP = "GBP"
+    JPY = "JPY"
+    SEK = "SEK"
+    _USD = "usd"
+    _AUD = "aud"
+    _CHF = "chf"
+    _EUR = "eur"
+    _GBP = "gbp"
+    _JPY = "jpy"
+    _SEK = "sek"
+
+
+@plot_session_function
+def excess_returns_(price_series: pd.Series, currency: RiskFreeRateCurrency = RiskFreeRateCurrency.USD) -> pd.Series:
+    """
+    Calculate excess returns
+
+    :param price_series: price series
+    :param currency: currency for risk-free rate, defaults to USD
+    :return: excess returns
+
+    **Usage**
+
+    Given a price series P and risk-free rate R, excess returns E are defined as:
+
+    :math:`E_t = E_{t-1} + P_t - P_{t-1} * (1 + R * (D_t - D_{t-1}) / 360)`
+
+    The `Actual/360 <https://en.wikipedia.org/wiki/Day_count_convention#Actual/360>`_ day count convention is used.
+
+    **Examples**
+
+    Get excess returns from a price series.
+
+    >>> er = excess_returns(generate_series(100), USD)
+    """
+    return excess_returns(price_series, Currency(currency.value), day_count_convention=DayCountConvention.ACTUAL_360)
+
+
+@plot_session_function
+def sharpe_ratio(series: pd.Series, currency: RiskFreeRateCurrency = RiskFreeRateCurrency.USD,
+                 w: Union[Window, int, str] = None, curve_type: CurveType = CurveType.PRICES,
+                 method: Interpolate = Interpolate.NAN) -> pd.Series:
+    """
+    Calculate Sharpe ratio
+
+    :param series: series of prices or excess returns for an asset
+    :param currency: currency for risk-free rate, defaults to USD
+    :param w: Window or int: size of window and ramp up to use. e.g. Window(22, 10) where 22 is the window size
+              and 10 the ramp up value.  If w is a string, it should be a relative date like '1m', '1d', etc.
+              Window size defaults to length of series.
+    :param curve_type: whether input series is of prices or excess returns, defaults to prices
+    :param method: interpolation method (default: nan). Used to calculate returns on dates without data (i.e. weekends)
+              when window is a relative date. Defaults to no interpolation.
+    :return: Sharpe ratio
+
+    **Usage**
+
+    Given a price series P, risk-free rate R, and window of size w returns the rolling
+    `Sharpe ratio <https://en.wikipedia.org/wiki/Sharpe_ratio>`_ S:
+
+    :math:`S_t = \\frac{(E_t / E_{t-w+1})^{365.25 / (D_t - D_{t-w})}-1}{volatility(E, w)_t}`
+
+    Excess returns E are defined as:
+
+    :math:`E_t = E_{t-1} + P_t - P_{t-1} * (1 + R * (D_t - D_{t-1}) / 360)`
+
+    where D is the date for a data point. The
+    `Actual/360 <https://en.wikipedia.org/wiki/Day_count_convention#Actual/360>`_ day count convention is used.
+
+    **Examples**
+
+    Get rolling sharpe ratio of a price series (with window of 22).
+
+    >>> sr = sharpe_ratio(generate_series(365, END_TODAY), USD, 22, PRICES)
+
+    **See also**
+
+    :func:`volatility`
+    """
+    return _get_ratio(series, Currency(currency.value), w, day_count_convention=DayCountConvention.ACTUAL_360,
+                      curve_type=curve_type, interpolation_method=method)
+
+
 @plot_function
-def returns(series: pd.Series, obs: int = 1, type: Returns = Returns.SIMPLE) -> pd.Series:
+def returns(series: pd.Series, obs: Union[Window, int, str] = 1, type: Returns = Returns.SIMPLE) -> pd.Series:
     """
     Calculate returns from price series
 
     :param series: time series of prices
-    :param obs: number of observations
-    :param type: returns type
+    :param obs: number of observations or relative date e.g. 3d, 1w, 1m
+    :param type: returns type: simple, logarithmic or absolute
     :return: date-based time series of return
 
     **Usage**
 
     Compute returns series from price levels, based on the value of *type*:
 
-    ======   =============================
-    Type     Description
-    ======   =============================
-    simple   Simple arithmetic returns
-    log      Logarithmic returns
-    ======   =============================
+    ===========   =============================
+    Type          Description
+    ===========   =============================
+    simple        Simple arithmetic returns
+    logarithmic   Logarithmic returns
+    absolute      Absolute returns
+    ===========   =============================
 
     *Simple*
 
@@ -67,6 +252,14 @@ def returns(series: pd.Series, obs: int = 1, type: Returns = Returns.SIMPLE) -> 
     Natural logarithm of asset price changes, which can be aggregated through time
 
     :math:`Y_t = log(X_t) - log(X_{t-obs})`
+
+    where :math:`X_t` is the asset price at time :math:`t`
+
+    *Absolute*
+
+    Absolute change in asset prices
+
+    :math:`Y_t = X_t - X_{t-obs}`
 
     where :math:`X_t` is the asset price at time :math:`t`
 
@@ -85,13 +278,16 @@ def returns(series: pd.Series, obs: int = 1, type: Returns = Returns.SIMPLE) -> 
     if series.size < 1:
         return series
 
+    shifted_series = lag(series, obs, LagMode.TRUNCATE)
+
     if type == Returns.SIMPLE:
-        ret_series = series / series.shift(obs) - 1
+        ret_series = series / shifted_series - 1
     elif type == Returns.LOGARITHMIC:
-        log_s = series.apply(math.log)
-        ret_series = log_s - log_s.shift(obs)
+        ret_series = series.apply(math.log) - shifted_series.apply(math.log)
+    elif type == Returns.ABSOLUTE:
+        ret_series = series - shifted_series
     else:
-        raise MqValueError('Unknown returns type (use simple / log)')
+        raise MqValueError('Unknown returns type (use simple / logarithmic / absolute)')
 
     return ret_series
 
@@ -103,19 +299,20 @@ def prices(series: pd.Series, initial: int = 1, type: Returns = Returns.SIMPLE) 
 
     :param series: time series of returns
     :param initial: initial price level
-    :param type: returns type (simple, log)
+    :param type: returns type: simple, logarithmic or absolute
     :return: date-based time series of return
 
     **Usage**
 
     Compute price levels from returns series, based on the value of *type*:
 
-    ======   =============================
-    Type     Description
-    ======   =============================
-    simple   Simple arithmetic returns
-    log      Logarithmic returns
-    ======   =============================
+    ===========   =============================
+    Type          Description
+    ===========   =============================
+    simple        Simple arithmetic returns
+    logarithmic   Logarithmic returns
+    absolute      Absolute returns
+    ===========   =============================
 
     *Simple*
 
@@ -130,6 +327,14 @@ def prices(series: pd.Series, initial: int = 1, type: Returns = Returns.SIMPLE) 
     Compute asset price series from logarithmic returns:
 
     :math:`Y_t = e^{X_{t-1}} Y_{t-1}`
+
+    where :math:`X_t` is the asset price at time :math:`t` and :math:`Y_0 = initial`
+
+    *Absolute*
+
+    Compute asset price series from absolute returns:
+
+    :math:`Y_t = X_{t-1} + Y_{t-1}`
 
     where :math:`X_t` is the asset price at time :math:`t` and :math:`Y_0 = initial`
 
@@ -152,8 +357,10 @@ def prices(series: pd.Series, initial: int = 1, type: Returns = Returns.SIMPLE) 
         return product(1 + series) * initial
     elif type == Returns.LOGARITHMIC:
         return product(series.apply(math.exp)) * initial
+    elif type == Returns.ABSOLUTE:
+        return sum_(series) + initial
     else:
-        raise MqValueError('Unknown returns type (use simple / log)')
+        raise MqValueError('Unknown returns type (use simple / Logarithmic / absolute)')
 
 
 @plot_function
@@ -186,7 +393,10 @@ def index(x: pd.Series, initial: int = 1) -> pd.Series:
 
     """
     i = x.first_valid_index()
-    return pd.Series() if i is None else initial * x / x[i]
+    if not x[i]:
+        raise MqValueError('Divide by zero error. Ensure that the first value of series passed to index(...) '
+                           'is non-zero')
+    return pd.Series(dtype=float) if i is None else initial * x / x[i]
 
 
 @plot_function
@@ -224,7 +434,7 @@ def _get_annualization_factor(x):
     prev_idx = x.index[0]
     distances = []
 
-    for idx, value in x.iloc[1:].iteritems():
+    for idx, value in x.iloc[1:].items():
         d = (idx - prev_idx).days
         if d == 0:
             raise MqValueError('multiple data points on same date')
@@ -294,15 +504,16 @@ def annualize(x: pd.Series) -> pd.Series:
 
 
 @plot_function
-def volatility(x: pd.Series, w: Union[Window, int] = Window(None, 0),
+def volatility(x: pd.Series, w: Union[Window, int, str] = Window(None, 0),
                returns_type: Returns = Returns.SIMPLE) -> pd.Series:
     """
     Realized volatility of price series
 
     :param x: time series of prices
-    :param w: Window or int: number of observations and ramp up to use. e.g. Window(22, 10) where 22 is the window size
-    and 10 the ramp up value. Window size defaults to length of series.
-    :param returns_type: returns type
+    :param w: Window or int: size of window and ramp up to use. e.g. Window(22, 10) where 22 is the window size
+              and 10 the ramp up value.  If w is a string, it should be a relative date like '1m', '1d', etc.
+              Window size defaults to length of series.
+    :param returns_type: returns type: simple, logarithmic or absolute
     :return: date-based time series of return
 
     **Usage**
@@ -310,12 +521,24 @@ def volatility(x: pd.Series, w: Union[Window, int] = Window(None, 0),
     Calculate rolling annualized realized volatility of a price series over a given window. Annual volatility of 20% is
     returned as 20.0:
 
-    :math:`Y_t = \sqrt{\\frac{1}{N-1} \sum_{i=t-w+1}^t (R_t - \overline{R_t})^2} * \sqrt{252} * 100`
+    :math:`Y_t = \\sqrt{\\frac{1}{N-1} \\sum_{i=t-w+1}^t (R_t - \\overline{R_t})^2} * \\sqrt{252} * 100`
 
-    where N is the number of observations in each rolling window, :math:`w`, :math:`R_t` is the simple return on time
-    :math:`t`:
+    where N is the number of observations in each rolling window :math:`w`, :math:`R_t` is the return on time
+    :math:`t` based on *returns_type*
 
-    :math:`R_t = \\frac{X_t}{X_{t-1}} - 1`
+    ===========   =======================================================
+    Type          Description
+    ===========   =======================================================
+    simple        Simple geometric change in asset prices:
+                  :math:`R_t = \\frac{X_t}{X_{t-1}} - 1`
+                  where :math:`X_t` is the asset price at time :math:`t`
+    logarithmic   Natural logarithm of asset price changes:
+                  :math:`R_t = log(X_t) - log(X_{t-1})`
+                  where :math:`X_t` is the asset price at time :math:`t`
+    absolute      Absolute change in asset prices:
+                  :math:`Y_t = X_t - X_{t-obs}`
+                  where :math:`X_t` is the asset price at time :math:`t`
+    ===========   =======================================================
 
     and :math:`\overline{R_t}` is the mean value over the same window:
 
@@ -346,15 +569,19 @@ def volatility(x: pd.Series, w: Union[Window, int] = Window(None, 0),
 
 @plot_function
 def correlation(x: pd.Series, y: pd.Series,
-                w: Union[Window, int] = Window(None, 0), type_: SeriesType = SeriesType.PRICES) -> pd.Series:
+                w: Union[Window, int, str] = Window(None, 0), type_: SeriesType = SeriesType.PRICES,
+                returns_type: Returns = Returns.SIMPLE) -> pd.Series:
     """
     Rolling correlation of two price series
 
     :param x: price series
     :param y: price series
-    :param w: Window or int: number of observations and ramp up to use. e.g. Window(22, 10) where 22 is the window size
-    and 10 the ramp up value. Window size defaults to length of series.
-    :param type_: type of both input series
+    :param w: Window, int, or str: size of window and ramp up to use. e.g. Window(22, 10) where 22 is the window size
+              and 10 the ramp up value. If w is a string, it should be a relative date like '1m', '1d', etc.
+              Window size defaults to length of series.
+    :param type_: type of both input series: prices or returns
+    :param returns_type: Method to calculate returns when type_ is PRICES, simple, logarithmic or absolute. You can
+                        also pass two methods to calculate returns for x and y respectively.
     :return: date-based time series of correlation
 
     **Usage**
@@ -365,11 +592,13 @@ def correlation(x: pd.Series, y: pd.Series,
     :math:`\\rho_t = \\frac{\sum_{i=t-w+1}^t (R_t - \overline{R_t})(Y_t - \overline{S_t})}{(N-1)\sigma R_t\sigma S_t}`
 
     where N is the number of observations in each rolling window, :math:`w`, and :math:`R_t` and :math:`S_t` are the
-    simple returns for each series on time :math:`t`:
+    simple returns for each series on time :math:`t`
+
+    If prices are provided then returns are calculated based on the returns_type e.g. for simple returns:
 
     :math:`R_t = \\frac{X_t}{X_{t-1}} - 1` and :math:`S_t = \\frac{Y_t}{Y_{t-1}} - 1`
 
-    If prices = False, assumes returns are provided:
+    If returns are provided:
 
     :math:`R_t = X_t` and :math:`S_t = Y_t`
 
@@ -398,26 +627,49 @@ def correlation(x: pd.Series, y: pd.Series,
         return x
 
     given_prices = type_ == SeriesType.PRICES
-    ret_1 = returns(x) if given_prices else x
-    ret_2 = returns(y) if given_prices else y
+    if given_prices:
+        if isinstance(returns_type, (tuple, list)):
+            if len(returns_type) != 2:
+                raise MqValueError('Expected a list of length 2 for "returns_type"')
+            if not all(isinstance(r, Returns) for r in returns_type):
+                raise MqTypeError('Expected a list of Returns for "returns_type"')
+            returns_type_x, returns_type_y = returns_type
+        else:
+            returns_type_x = returns_type_y = returns_type
+        ret_1 = returns(x, type=returns_type_x)
+        ret_2 = returns(y, type=returns_type_y)
+    else:
+        ret_1 = x
+        ret_2 = y
 
     clean_ret1 = ret_1.dropna()
     clean_ret2 = ret_2.dropna()
 
-    corr = clean_ret1.rolling(w.w, 0).corr(clean_ret2)
+    if isinstance(w.w, pd.DateOffset):
+        if isinstance(clean_ret1.index, pd.DatetimeIndex):
+            values = [clean_ret1.loc[(clean_ret1.index > idx - w.w) & (clean_ret1.index <= idx)].corr(clean_ret2)
+                      for idx in clean_ret1.index]
+        else:
+            values = [clean_ret1.loc[(clean_ret1.index > (idx - w.w).date()) &
+                                     (clean_ret1.index <= idx)].corr(clean_ret2)
+                      for idx in clean_ret1.index]
+        corr = pd.Series(values, index=clean_ret1.index)
+    else:
+        corr = clean_ret1.rolling(w.w, 0).corr(clean_ret2)
 
     return apply_ramp(interpolate(corr, x, Interpolate.NAN), w)
 
 
 @plot_function
-def beta(x: pd.Series, b: pd.Series, w: Union[Window, int] = Window(None, 0), prices: bool = True) -> pd.Series:
+def beta(x: pd.Series, b: pd.Series, w: Union[Window, int, str] = Window(None, 0), prices: bool = True) -> pd.Series:
     """
     Rolling beta of price series and benchmark
 
     :param x: time series of prices
     :param b: time series of benchmark prices
-    :param w: Window or int: number of observations and ramp up to use. e.g. Window(22, 10) where 22 is the window size
-    and 10 the ramp up value. Window size defaults to length of series.
+    :param w: Window, int, or str: size of window and ramp up to use. e.g. Window(22, 10) where 22 is the window size
+              and 10 the ramp up value.  If w is a string, it should be a relative date like '1m', '1d', etc.
+              Window size defaults to length of series.
     :param prices: True if input series are prices, False if they are returns
     :return: date-based time series of beta
 
@@ -426,11 +678,11 @@ def beta(x: pd.Series, b: pd.Series, w: Union[Window, int] = Window(None, 0), pr
     Calculate rolling `beta <https://en.wikipedia.org/wiki/Beta_(finance)>`_,
     :math:`\\beta_t` of a series to a benchmark over a given window:
 
-    :math:`R_t = \\alpha_t + \\beta S_t + \epsilon_t`
+    :math:`R_t = \\alpha_t + \\beta S_t + \\epsilon_t`
 
     Calculated as:
 
-    :math:`\\beta_t = \\frac{\sum_{i=t-w+1}^t Cov(R_t, S_t)}{Var(S_t)}`
+    :math:`\\beta_t = \\frac{\\sum_{i=t-w+1}^t Cov(R_t, S_t)}{Var(S_t)}`
 
     where N is the number of observations in each rolling window, :math:`w`, and :math:`R_t` and :math:`S_t` are the
     simple returns for each series on time :math:`t`:
@@ -441,7 +693,7 @@ def beta(x: pd.Series, b: pd.Series, w: Union[Window, int] = Window(None, 0), pr
 
     :math:`R_t = X_t` and :math:`S_t = b_t`
 
-    :math:`Cov(R_t, S_t)` and :math:`Var(S_t)` are the mean and variance of  series
+    :math:`Cov(R_t, S_t)` and :math:`Var(S_t)` are the covariance and variance of the series
     :math:`R_t` and :math:`S_t` over the same window
 
     If window is not provided, computes beta over the full series
@@ -458,29 +710,60 @@ def beta(x: pd.Series, b: pd.Series, w: Union[Window, int] = Window(None, 0), pr
 
     :func:`var` :func:`cov` :func:`correlation` :func:`returns`
     """
+    if not isinstance(prices, bool):
+        raise MqTypeError('expected a boolean value for "prices"')
+
     w = normalize_window(x, w)
 
     ret_series = returns(x) if prices else x
     ret_benchmark = returns(b) if prices else b
 
-    cov = ret_series.rolling(w.w, 0).cov(ret_benchmark.rolling(w.w, 0))
-    result = cov / ret_benchmark.rolling(w.w, 0).var()
+    if isinstance(w.w, pd.DateOffset):
+        series_index = ret_series.index.intersection(ret_benchmark.index)
+        size = len(series_index)
+        ret_series = ret_series.loc[series_index]
+        benchmark_series = ret_benchmark.loc[series_index]
+
+        ret_values = np.array(ret_series.values, dtype=np.double)
+        benchmark_values = np.array(benchmark_series.values, dtype=np.double)
+
+        cov_results = np.empty(size, dtype=np.double)
+        var_results = np.empty(size, dtype=np.double)
+
+        offset = w.w
+        start = 0
+        for i in range(1, size):
+            min_index_value = (series_index[i] - offset).date()
+            for idx in range(start, i + 1):
+                if series_index[idx] > min_index_value:
+                    start = idx
+                    break
+
+            sub_benchmark_values = benchmark_values[start:i + 1]
+            var_results[i] = np.var(sub_benchmark_values, ddof=1)
+            cov_results[i] = np.cov(ret_values[start:i + 1], sub_benchmark_values, ddof=1)[0][1]
+
+        result = pd.Series(cov_results / var_results, index=series_index, dtype=np.double)
+    else:
+        cov = ret_series.rolling(w.w, 0).cov(ret_benchmark)
+        result = cov / ret_benchmark.rolling(w.w, 0).var()
 
     # do not compute initial values as they may be extreme when sample size is small
-
     result[0:3] = np.nan
-
     return apply_ramp(interpolate(result, x, Interpolate.NAN), w)
 
 
 @plot_function
-def max_drawdown(x: pd.Series, w: Union[Window, int] = Window(None, 0)) -> pd.Series:
+def max_drawdown(x: pd.Series, w: Union[Window, int, str] = Window(None, 0)) -> pd.Series:
     """
-    Compute the maximum peak to trough drawdown over a rolling window.
+    Compute the maximum peak to trough drawdown over a rolling window as a ratio.
+
+    i.e. if the max drawdown for a period is 20%, this function will return 0.2.
 
     :param x: time series
-    :param w: Window or int: number of observations and ramp up to use. e.g. Window(22, 10) where 22 is the window size
-    and 10 the ramp up value. Window size defaults to length of series.
+    :param w: Window, int, or str: size of window and ramp up to use. e.g. Window(22, 10) where 22 is the window size
+              and 10 the ramp up value.  If w is a string, it should be a relative date like '1m', '1d', etc.
+              Window size defaults to length of series.
     :return: time series of rolling maximum drawdown
 
     **Examples**
@@ -496,7 +779,15 @@ def max_drawdown(x: pd.Series, w: Union[Window, int] = Window(None, 0)) -> pd.Se
 
     """
     w = normalize_window(x, w)
-
-    rolling_max = x.rolling(w.w, 0).max()
-    result = (x / rolling_max - 1).rolling(w.w, 0).min()
+    if isinstance(w.w, pd.DateOffset):
+        if np.issubdtype(x.index, dt.date):
+            scores = pd.Series([x[idx] / x.loc[(x.index > (idx - w.w).date()) & (x.index <= idx)].max() - 1
+                                for idx in x.index], index=x.index)
+            result = pd.Series([scores.loc[(scores.index > (idx - w.w).date()) & (scores.index <= idx)].min()
+                                for idx in scores.index], index=scores.index)
+        else:
+            raise TypeError('Please pass in list of dates as index')
+    else:
+        rolling_max = x.rolling(w.w, 0).max()
+        result = (x / rolling_max - 1).rolling(w.w, 0).min()
     return apply_ramp(result, w)

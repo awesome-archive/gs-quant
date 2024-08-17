@@ -13,18 +13,19 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 """
-import gs_quant
 import os
-import setuptools
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+import setuptools
+import versioneer
+
 if "sdist" in sys.argv:
     reference = os.path.dirname(__file__)
     doc_dir = os.path.join(reference, "docs")
-    p = subprocess.Popen(["make", "html"], cwd=doc_dir, shell=True)
+    p = subprocess.Popen("sphinx-build -M help . _build", cwd=doc_dir, shell=True)
     p.wait(30)
     if p.returncode != 0:
         raise RuntimeError("unable to make docs")
@@ -40,7 +41,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="gs_quant",
-    version=gs_quant.__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="Goldman Sachs",
     author_email="developer@gs.com",
     description="Goldman Sachs Quant",
@@ -50,33 +52,54 @@ setuptools.setup(
     license="http://www.apache.org/licenses/LICENSE-2.0",
     packages=setuptools.find_packages(),
     include_package_data=True,
-    # TODO: remove compatibility packages (configparser, future, six) now that we only support 3.6+
     install_requires=[
+        "aenum",
         "backoff",
         "cachetools",
-        "configparser",
+        "certifi",
+        "dataclasses;python_version<'3.7'",
+        "contextvars;python_version<'3.7'",
+        "dataclasses_json",
+        "deprecation",
         "funcsigs",
-        "future",
         "inflection",
+        "lmfit",
+        "more_itertools",
         "msgpack",
-        "pandas",
+        "nest-asyncio",
+        "opentracing",
+        "numpy<2.0.0",
+        "pandas>1.0.0,<2.0.0;python_version<'3.7'",
+        "pandas>=1.4,<2.2;python_version>'3.7'",
+        "pydash<7.0.0",
         "python-dateutil>=2.7.0",
         "requests",
-        "scipy",
-        "six",
-        "typing;python_version<'3.7'"
+        "httpx>=0.23.3;python_version>'3.6'",
+        "scipy>=1.2.0;python_version>'3.8'",
+        "scipy>=1.2.0,<1.6.0;python_version<'3.7'",
+        "scipy>=1.2.0,<1.8.0;python_version<'3.8'",
+        "statsmodels<=0.12.2;python_version<'3.7'",
+        "statsmodels>=0.13.0;python_version>'3.6'",
+        "tqdm",
+        "typing;python_version<'3.7'",
+        "websockets"
     ],
     extras_require={
-        "internal": ["gs_quant_internal>=0.4.1", "requests_kerberos"],
-        "notebook": ["jupyter", "matplotlib~=2.1.0", "pprint"],
-        "test": ["pytest", "pytest-cov", "pytest-mock", "testfixtures"],
+        "internal": ["gs_quant_internal>=1.4.9"],
+        "turbo": ["quant-extensions"],
+        "notebook": ["jupyter", "matplotlib", "seaborn", "treelib"],
+        "test": ["pytest", "pytest-cov", "pytest-mock", "pytest-ordering", "testfixtures", "nbconvert", "nbformat",
+                 "jupyter_client"],
         "develop": ["wheel", "sphinx", "sphinx_rtd_theme", "sphinx_autodoc_typehints", "pytest", "pytest-cov",
-                    "pytest-mock", "testfixtures"]
+                    "pytest-mock", "pytest-ordering", "testfixtures"]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: Apache Software License"
     ],

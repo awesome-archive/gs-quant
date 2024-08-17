@@ -14,15 +14,15 @@ specific language governing permissions and limitations
 under the License.
 """
 
+import datetime as dt
 from unittest import mock
 
-import datetime as dt
 import pandas as pd
 
+import gs_quant.risk as risk
 from gs_quant.api.gs.risk import GsRiskApi
 from gs_quant.instrument import IRSwap, IRSwaption
 from gs_quant.markets import HistoricalPricingContext, PricingCache, PricingContext
-import gs_quant.risk as risk
 from gs_quant.session import Environment, GsSession
 
 
@@ -34,34 +34,85 @@ def set_session():
 
 
 def test_cache_addition_removal():
-    # Don't use a mocker here as it will hold refs to things and break the cache removal test
     set_session()
 
     p1 = IRSwap('Pay', '10y', 'DKK')
 
-    with PricingContext(use_cache=True):
-        market_data_location = PricingContext.current.market_data_location
-        pricing_date = PricingContext.current.pricing_date
-        p1.price()
+    with mock.patch('gs_quant.api.gs.risk.GsRiskApi._exec') as mocker:
+        mocker.return_value = [[[[{'$type': 'Risk', 'val': 0.07}]]]]
 
-    assert PricingCache.get(p1, market_data_location, risk.Price, pricing_date)
+        with PricingContext(use_cache=True) as pc:
+            p1.price()
+            price_key = pc._PricingContext__risk_key(risk.Price, p1.provider)
+            delta_key = pc._PricingContext__risk_key(risk.IRDelta, p1.provider)
 
-    assert not PricingCache.get(p1, market_data_location, risk.IRDelta, pricing_date)
+        assert PricingCache.get(price_key, p1)
+
+    assert not PricingCache.get(delta_key, p1)
 
     # Assert that deleting the cached instrument removes it from the PricingCache
     # N.B, this may not work when debugging tests
     del p1
+    del mocker
+
+    import gc
+    gc.collect()
+
     p2 = IRSwap('Pay', '10y', 'DKK')
-    assert not PricingCache.get(p2, market_data_location, risk.Price, pricing_date)
+    with PricingContext.current as cur:
+        p2_price_key = cur._PricingContext__risk_key(risk.Price, p2.provider)
+    # assert not PricingCache.get(p2_price_key)
 
-    with PricingContext(use_cache=True):
-        p2.price()
+    with mock.patch('gs_quant.api.gs.risk.GsRiskApi._exec') as mocker:
+        mocker.return_value = [[[[{'$type': 'Risk', 'val': 0.07}]]]]
 
-    assert PricingCache.get(p2, market_data_location, risk.Price, pricing_date)
+        with PricingContext(use_cache=True):
+            p2_price = p2.price()
+
+    assert PricingCache.get(p2_price_key, p2) == p2_price.result()
+
+    # Assert that running under a scenario does not retrieve the base result
+    with mock.patch('gs_quant.api.gs.risk.GsRiskApi._exec') as mocker:
+        mocker.return_value = [[[[{'$type': 'Risk', 'val': 0.08}]]]]
+
+        with risk.RollFwd(date='1m'), PricingContext(use_cache=True) as spc:
+            # Don't want the price without the scenario
+            scenario_risk_key = spc._PricingContext__risk_key(risk.Price, p2.provider)
+            assert not PricingCache.get(scenario_risk_key, p2)
+            scenario_price = p2.price()
+
+        assert PricingCache.get(scenario_risk_key, p2) == scenario_price.result()
+
+        with PricingContext(use_cache=True) as pc, risk.RollFwd(date='1m'):
+            cached_scenario_price = PricingCache.get(pc._PricingContext__risk_key(risk.Price, p2.provider), p2)
+
+    # Check that we get the cached scenario price
+    assert cached_scenario_price == scenario_price.result()
+
+    # Check the base result is still correct
+    assert PricingCache.get(p2_price_key, p2) == p2_price.result()
+
+    # Assert that caching respects parameters, such as csa
+    with mock.patch('gs_quant.api.gs.risk.GsRiskApi._exec') as mocker:
+        mocker.return_value = [[[[{'$type': 'Risk', 'val': 0.08}]]]]
+
+        with PricingContext(use_cache=True, csa_term='INVALID') as pc:
+            # Don't want the price with default csa
+            assert not PricingCache.get(pc._PricingContext__risk_key(risk.Price, p2.provider), p2)
+            csa_price = p2.price()
+
+        with PricingContext(use_cache=True, csa_term='INVALID') as pc:
+            cached_csa_price = PricingCache.get(pc._PricingContext__risk_key(risk.Price, p2.provider), p2)
+
+    # Check that we get the cached csa price
+    assert cached_csa_price == csa_price.result()
+
+    # Check the base result is still correct
+    assert PricingCache.get(p2_price_key, p2) == p2_price.result()
 
     # Change a property and assert that p2 is no longer cached
     p2.notional_currency = 'EUR'
-    assert not PricingCache.get(p2, market_data_location, risk.Price, pricing_date)
+    assert not PricingCache.get(p2_price_key, p2)
 
 
 @mock.patch.object(GsRiskApi, '_exec')
@@ -71,102 +122,81 @@ def test_cache_subset(mocker):
     ir_swap = IRSwap('Pay', '10y', 'DKK')
 
     values = [
-        {'date': '2019-10-07', 'value': 0.01},
-        {'date': '2019-10-08', 'value': 0.01}
+        {'$type': 'Risk', 'val': 0.01}
     ]
-    mocker.return_value = [[values]]
+    mocker.return_value = [[[values]], [[values]]]
 
     dates = (dt.date(2019, 10, 7), dt.date(2019, 10, 8))
     with HistoricalPricingContext(dates=dates, use_cache=True):
-        market_data_location = PricingContext.current.market_data_location
         price_f = ir_swap.price()
     price_f.result()
 
-    cached = PricingCache.get(ir_swap, market_data_location, risk.Price, dates)
-    assert len(cached) == len(dates)
+    for date in dates:
+        with PricingContext(pricing_date=date, use_historical_diddles_only=True) as pc:
+            risk_key = pc._PricingContext__risk_key(risk.Price, ir_swap.provider)
+        cached_scalar = PricingCache.get(risk_key, ir_swap)
+        assert cached_scalar
+        assert isinstance(cached_scalar, float)
 
-    cached_scalar = PricingCache.get(ir_swap, market_data_location, risk.Price, dates[0])
-    assert isinstance(cached_scalar, float)
-
-    dates = dates + (dt.date(2019, 10, 9),)
-    cached2 = PricingCache.get(ir_swap, market_data_location, risk.Price, dates)
-    assert len(cached2)
-    assert len(cached2) < len(dates)
+    with PricingContext(pricing_date=dt.date(2019, 10, 9)) as pc:
+        risk_key = pc._PricingContext__risk_key(risk.Price, ir_swap.provider)
+    cached2 = PricingCache.get(risk_key, ir_swap)
+    assert cached2 is None
 
     values = [
-        {'date': '2019-10-07', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '1y', 'value': 0.01},
-        {'date': '2019-10-07', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '2y', 'value': 0.015},
-        {'date': '2019-10-08', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '1y', 'value': 0.01},
-        {'date': '2019-10-08', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '2y', 'value': 0.015},
-        {'date': '2019-10-09', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '1y', 'value': 0.01},
-        {'date': '2019-10-09', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-         'point': '2y', 'value': 0.015}
+        {
+            '$type': 'RiskVector',
+            'asset': [0.01, 0.015],
+            'points': [
+                {'type': 'IR', 'asset': 'USD', 'class_': 'Swap', 'point': '1y'},
+                {'type': 'IR', 'asset': 'USD', 'class_': 'Swap', 'point': '2y'}
+            ]
+        }
     ]
-    mocker.return_value = [[values]]
 
-    with HistoricalPricingContext(dates=dates, use_cache=True):
-        market_data_location = PricingContext.current.market_data_location
-        risk_f = ir_swap.calc(risk.IRDelta)
-    risk_frame = risk_f.result()
+    # Check that we can return the same values from the cache, after calculating once (with return values set to None)
 
-    assert isinstance(risk_frame, pd.DataFrame)
-    assert len(risk_frame.index.unique()) == len(dates)
-    cached3 = PricingCache.get(ir_swap, market_data_location, risk.IRDelta, dates)
-    assert len(cached3.index.unique()) == len(dates)
+    for return_values in ([[[values]], [[values]], [[values]]], None):
+        mocker.return_value = return_values
 
-    cached4 = PricingCache.get(ir_swap, market_data_location, risk.IRDelta, dates[0])
-    assert len(cached4.index.unique()) == len(cached4)
+        with HistoricalPricingContext(dates=dates, use_cache=True):
+            risk_f = ir_swap.calc(risk.IRDelta)
+
+        risk_frame = risk_f.result()
+
+        assert isinstance(risk_frame, pd.DataFrame)
+        assert len(risk_frame.index.unique()) == len(dates)
 
 
 @mock.patch.object(GsRiskApi, '_exec')
 def test_multiple_measures(mocker):
-    values = [
+    day = [
         [
-            [
-                {'date': '2019-10-07', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-07', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015},
-                {'date': '2019-10-08', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-08', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015},
-                {'date': '2019-10-09', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-09', 'marketDataType': 'IR Vol', 'assetId': 'USD-LIBOR-BBA', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015}
-            ]
+            [{
+                '$type': 'RiskVector',
+                'asset': [0.01, 0.015],
+                'points': [
+                    {'type': 'IR Vol', 'asset': 'USD-LIBOR-BBA', 'class_': 'Swap', 'point': '1y'},
+                    {'type': 'IR Vol', 'asset': 'USD-LIBOR-BBA', 'class_': 'Swap', 'point': '2y'}
+                ]
+            }]
         ],
         [
-            [
-                {'date': '2019-10-07', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-07', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015},
-                {'date': '2019-10-08', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-08', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015},
-                {'date': '2019-10-09', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '1y', 'value': 0.01},
-                {'date': '2019-10-09', 'marketDataType': 'IR', 'assetId': 'USD', 'pointClass': 'Swap',
-                 'point': '2y', 'value': 0.015}
-            ]
+            [{
+                '$type': 'RiskVector',
+                'asset': [0.01, 0.015],
+                'points': [
+                    {'type': 'IR', 'asset': 'USD', 'class_': 'Swap', 'point': '1y'},
+                    {'type': 'IR', 'asset': 'USD', 'class_': 'Swap', 'point': '2y'}
+                ]
+            }],
         ],
         [
-            [
-                {'date': '2019-10-07', 'value': 0.01},
-                {'date': '2019-10-08', 'value': 0.01},
-                {'date': '2019-10-09', 'value': 0.01}
-            ]
+            [{'$type': 'Risk', 'val': 0.01}]
         ]
     ]
-    mocker.return_value = values
+
+    mocker.return_value = [day, day, day]
 
     set_session()
 
@@ -174,31 +204,18 @@ def test_multiple_measures(mocker):
 
     dates = (dt.date(2019, 10, 7), dt.date(2019, 10, 8), dt.date(2019, 10, 9))
     with HistoricalPricingContext(dates=dates, use_cache=True):
-        market_data_location = PricingContext.current.market_data_location
         ir_swaption.price()
         ir_swaption.calc(risk.IRDelta)
         ir_swaption.calc(risk.IRVega)
 
     # make sure all the risk measures got cached correctly
-    cached = PricingCache.get(ir_swaption, market_data_location, risk.Price, dates)
-    assert len(cached) == len(dates)
+    for date in dates:
+        with PricingContext(pricing_date=date, use_historical_diddles_only=True) as pc:
+            for risk_measure in (risk.Price, risk.IRDelta, risk.IRVega):
+                val = PricingCache.get(pc._PricingContext__risk_key(risk_measure, ir_swaption.provider), ir_swaption)
+                assert val is not None
 
-    cached1 = PricingCache.get(ir_swaption, market_data_location, risk.IRDelta, dates)
-    assert len(cached1.index.unique()) == len(dates)
-
-    cached2 = PricingCache.get(ir_swaption, market_data_location, risk.IRVega, dates)
-    assert len(cached2.index.unique()) == len(dates)
-
-    # date not in cache
-    cached3 = PricingCache.get(ir_swaption, market_data_location, risk.IRVega, dt.date(2019, 10, 11))
-    assert cached3 is None
-
-    # subset from cache
-    subset = dates[0:2]
-    cached4 = PricingCache.get(ir_swaption, market_data_location, risk.Price, subset)
-    assert len(cached4) == len(subset)
-
-    # intersection
-    subset += (dt.date(2019, 10, 2),)
-    cached5 = PricingCache.get(ir_swaption, market_data_location, risk.Price, subset)
-    assert len(cached5) == len(subset) - 1
+    with PricingContext(pricing_date=dt.date(2019, 10, 11), use_historical_diddles_only=True) as pc:
+        for risk_measure in (risk.Price, risk.IRDelta, risk.IRVega):
+            val = PricingCache.get(pc._PricingContext__risk_key(risk_measure, ir_swaption.provider), ir_swaption)
+            assert val is None
